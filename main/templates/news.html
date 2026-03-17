@@ -1,0 +1,83 @@
+{% extends 'pages/index.html' %}
+{% load static %}
+
+{% block content %}
+{% include 'pages/logout.html' %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+<link rel="stylesheet" type="text/css" href="{% static 'css/landingpage.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/landingpage.css' %}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+<link rel="stylesheet" href="{% static 'css/adminPost.css' %}">
+
+<nav class="navbar">
+    <div class="logo">
+      <img src="{% static 'image/logoams.png' %}" alt="logo">
+      <h3>OMSUFB</h3>
+    </div>
+    <div class="nav-links">
+    <a href="{% url 'landing_page' %}">Get Back</a>    
+    <div class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Others
+        </a>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'news' %}">News</a></li>
+            <li><a class="dropdown-item" href="{% url 'org_chart' %}">Org Chart</a></li>
+            <li><a class="dropdown-item" href="{% url 'status' %}">Status</a></li>
+        </ul>
+    </div>
+    </div>
+    </div>
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+</nav>
+
+<div class="box">
+    
+    <ul>
+        {% if posts %}
+             {% for post in posts %}
+             <div class="cons">
+                 <div class="post-content">
+                     <div class="post-header">
+                         <strong>{{ post.author.first_name }}</strong> <br>
+                         <span>{{ post.created_at }}</span><br>
+                     </div>
+                     <div class="post-body" id="postBody-{{ post.id }}">
+                         <p>{{ post.body }}</p>
+                     </div>                    
+                     {% if post.image %}
+                         <div class="post-container">
+                             <a href="{{ post.image.url }}" target="_blank">
+                                 <img src="{{ post.image.url }}" alt="Post Image" class="post-image">
+                             </a>
+                         </div>
+                     {% endif %}
+                     <br>
+                 </div>
+                 
+             </div>
+             {% endfor %}
+         {% else %}
+             <div class="no-posts-message">
+                 <p>No posts available. Be the first to share something!</p>
+             </div>
+         {% endif %}
+     </ul>
+ </div>
+</div>
+
+<script>
+    function toggleCreatePost() {
+        const createPostSection = document.getElementById('createPostSection');
+        createPostSection.style.display = createPostSection.style.display === 'none' || createPostSection.style.display === '' ? 'block' : 'none';
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'builder.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  {% include 'admin/sidebar.html' %}
+  <div id="dashboard">
+    <h1>Instructor Attendance</h1>
+    <hr/>
+    <!-- 🔍 Search Bar -->
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search...">
+    </div>
+
+    <!-- 📝 Table and No Results Message -->
+    <div id="table-container">
+      <table id="attendanceTable">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Username</th>
+            <th>Date</th>
+            <th>Time In</th>
+            <th>Time Out</th>
+     
+          </tr>
+        </thead>
+        <tbody>
+          {% regroup At by date as date_list %}
+          {% for date_group in date_list %}
+            <!-- 📅 Date Separator -->
+            <tr class="date-separator">
+              <td colspan="6" style="background-color: #dff8d7; text-align:center; font-weight:bold;">
+                {{ date_group.grouper }}
+              </td>
+            </tr>
+        
+            {% for item in date_group.list %}
+            <tr>
+              <td>{{ item.IdNum }}</td>
+              <td>{{ item.first_name }} {{ item.last_name }}</td>
+              <td>{{ item.date }}</td>
+              <td>
+                {{ item.time_in }}
+                <span class="badge 
+                  {% if item.time_in_status == 'In' %}badge-success
+                  {% elif item.time_in_status == 'Late' %}badge-warning
+                  {% elif item.time_in_status == 'N/A' %}badge-muted
+                  {% endif %}">
+                  
+                  {% if item.time_in_status == 'In' %}
+                    ✅ {{ item.time_in_status }}
+                  {% elif item.time_in_status == 'Late' %}
+                    ⚠️ {{ item.time_in_status }}
+                  {% elif item.time_in_status == 'N/A' %}
+                    ❔ {{ item.time_in_status }}
+                  {% endif %}
+                </span>
+              </td>
+              <td>
+                {{ item.time_out }}
+                <span class="badge 
+                  {% if item.time_out_status == 'Out' %}badge-success
+                  {% elif item.time_out_status == 'Undertime' %}badge-danger
+                  {% elif item.time_out_status == 'N/A' %}badge-muted
+                  {% endif %}">
+                  
+                  {% if item.time_out_status == 'Out' %}
+                    ✅ {{ item.time_out_status }}
+                  {% elif item.time_out_status == 'Undertime' %}
+                    ❌ {{ item.time_out_status }}
+                  {% elif item.time_out_status == 'N/A' %}
+                    ❔ {{ item.time_out_status }}
+                  {% endif %}
+                </span>
+              </td>
+              
+            </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+        
+      </table>
+
+      <!-- Message if no match -->
+      <p id="noResults" style="display: none; text-align: center; margin-top: 20px; color: gray;">No results found.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+
+function togglePasswordVisibility(fieldId, checkbox) {
+  const field = document.getElementById(fieldId);
+  field.type = checkbox.checked ? 'text' : 'password';
+}
+
+function detectCapsLock(fieldId, warningId) {
+  const field = document.getElementById(fieldId);
+  const warning = document.getElementById(warningId);
+  if(!field || !warning) return;
+  field.addEventListener('keydown', function(e){
+    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+  });
+  field.addEventListener('keyup', function(e){
+    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+  });
+}
+</script>
+{% endblock %}

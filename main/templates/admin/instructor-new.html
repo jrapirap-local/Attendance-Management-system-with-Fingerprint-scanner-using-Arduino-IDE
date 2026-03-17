@@ -1,0 +1,112 @@
+{% extends 'builder.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  {% include 'admin/sidebar.html' %}
+  <div id="dashboard">
+    <h1>Instructor</h1>
+    <hr/>
+    
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-6">
+            <form method="post" class="form-control" enctype="multipart/form-data">
+
+                        <div class="form-group">
+                            <label for="idNum">ID:</label>
+                            <input type="text" id="idNum" name="idNum" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="first_name">First Name:</label>
+                            <input type="text" id="first_name" name="first_name" required>
+                        </div>
+   
+                        <div class="form-group">
+                            <label for="last_name">Last Name:</label>
+                            <input type="text" id="last_name" name="last_name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="middle_name">Middle Name:</label>
+                            <input type="text" id="middle_name" name="middle_name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="birthday">Birthday:</label>
+                            <input type="date" id="birthday" name="birthday" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="age">Age:</label>
+                            <input type="text" id="age" name="age" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gender">Gender:</label>
+                            <select id="gender" name="gender" required>
+                                <option value="" disabled selected>Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status">Status:</label>
+                            <select id="status" name="status" required>
+                                <option value="" disabled selected>Select status</option>
+                                <option value="Full time">Full time</option>
+                                <option value="Part time">Part time</option>
+                                <option value="Permanent">Permanent</option>
+                            </select>  
+                        </div>
+
+                        <div class="form-group">
+                            <label for="position">Position:</label>
+                            <select id="position" name="position" required>
+                                <option value="" disabled selected>Select position</option>
+                                <option value="Instructor 1">Instructor 1</option>
+                                <option value="Instructor 2">Instructor 2</option>
+                                <option value="Instructor 3">Instructor 3</option>
+                            </select>
+                            
+                        </div>
+
+                        <div class="form-group">
+                            <label for="organization">Organization:</label>
+                            <select id="organization" name="organization" required>
+                                <option value="" disabled selected>Select organization</option>
+                                <option value="Chairperson,DCS">Chairperson, DCS</option>
+                                <option value="Program Chair,CS">Program Chair, CS</option>
+                                <option value="Program Chair, IT">Program Chair, IT</option>
+                                <option value="Instructor">Instructor</option>
+                                <option value="Head, LMS">Head, LMS</option>
+                                <option value="Head, DCS RDE">Head, DCS RDE</option>
+                            </select>
+                            
+                        </div>
+
+                    <div class="">
+                        <label for="fileUpload" class="file-upload">Upload Profile Picture</label>
+                        <input type="file" id="fileUpload" accept="image/*">
+                        <span class="file-name" id="fileName">No file chosen</span>
+                    </div>                    
+            </form>
+        </div>
+        <div class="col-6">
+
+        </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.getElementById("fileUpload").addEventListener("change", function() {
+    const fileName = this.files[0]?.name || "No file chosen";
+    document.getElementById("fileName").textContent = fileName;
+    });
+</script>
+
+{% endblock %}

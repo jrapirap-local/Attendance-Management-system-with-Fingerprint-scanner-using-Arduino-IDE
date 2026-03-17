@@ -1,0 +1,48 @@
+{% extends 'builder.html' %}
+{% load static %}
+
+{% block content %}
+
+  <section id="home">
+    <img src="{% static 'image/logoams.png' %}" alt="Logo">
+    <h1>OMSUFB</h1>
+    <hr>
+    <!-- USER LOGIN -->
+    <div id="user-login" class="login-form">
+        <form method="POST" action="" autocomplete="on">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="ID Number" required autofocus>
+        <input type="password" name="password" placeholder="Password" required>
+        <div class="caps-warning" id="capsUser">Caps Lock is ON</div>
+        <div class="show-password">
+            <input type="checkbox" onclick="togglePasswordVisibility('user-password', this)">
+            <label>Show Password</label>
+        </div>
+        <button type="submit">Sign In</button>
+        {% if error_message %}
+          <p class="error">{{ error_message }}</p>
+        {% endif %}
+        </form>
+    </div>
+    <a href="{% url 'index' %}">Go to Home</a>
+  </section>
+<script>
+
+function togglePasswordVisibility(fieldId, checkbox) {
+  const field = document.getElementById(fieldId);
+  field.type = checkbox.checked ? 'text' : 'password';
+}
+
+function detectCapsLock(fieldId, warningId) {
+  const field = document.getElementById(fieldId);
+  const warning = document.getElementById(warningId);
+  if(!field || !warning) return;
+  field.addEventListener('keydown', function(e){
+    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+  });
+  field.addEventListener('keyup', function(e){
+    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+  });
+}
+</script>
+{% endblock %}

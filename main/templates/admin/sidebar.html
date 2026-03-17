@@ -1,0 +1,44 @@
+  {% load static %}
+  <div class="sidebar" id="sidebar">
+    <div class="logo-container">
+        <img src="{% static 'image/logoams.png' %}" alt="Logo" class="logo">
+    </div>
+    
+    <hr>
+    <div class="menu">
+        <a href="{% url 'dashboard' %}"><span>Dashboard</span></a>
+        <a href="{% url 'news' %}"><span>News</span></a>
+        <!-- Instructor Dropdown -->
+        <div class="dropdown">
+            <a class="dropdown-btn">Instructor ▾</a>
+
+            <div class="dropdown-content">
+                <a href="{% url 'instructornew' %}">Add Instructor</a>
+                <a href="{% url 'instructor' %}">Manage Instructor</a>
+                <a href="{% url 'attendance' %}">Instructor Attendance & Schedule</a>
+                <a href="#"><span>Daily Time Records</span></a>
+            </div>
+        </div>        
+        <!-- Comlab Dropdown -->
+        <div class="dropdown">
+            <a class="dropdown-btn">Comlab ▾</a>
+
+            <div class="dropdown-content">
+                <a href="#">Add Comlab</a>
+                <a href="{% url 'instructor' %}">Manage Comlab</a>
+            </div>
+        </div>  
+        <a href="#">Profile</a>
+        <div class="dropdown">
+            <a class="dropdown-btn">Settings ▾</a>
+            <div class="dropdown-content">
+                <a href="#">Profile & Security</a>
+                <a href="#">Database Management</a>
+            </div>
+        </div>     
+    </div>
+    <div class="logout">
+      <a href="#"><span>Logout</span></a>
+    </div>
+
+  </div>

@@ -1,0 +1,65 @@
+{% extends 'builder.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  {% include 'admin/sidebar.html' %}
+  <div id="dashboard">
+    <h1>News</h1>
+    <hr/>
+    <div class="news-box">
+      <ul>
+          {% if posts %}
+              {% for post in posts %}
+              <div class="cons">
+                  <div class="post-content">
+                      <div class="post-header">
+                          <strong>{{ post.author.first_name }}</strong> <br>
+                          <span>{{ post.created_at }}</span><br>
+                      </div>
+                      <div class="post-body" id="postBody-{{ post.id }}">
+                          <p>{{ post.body }}</p>
+                      </div>                    
+                      {% if post.image %}
+                          <div class="post-container">
+                              <a href="{{ post.image.url }}" target="_blank">
+                                  <img src="{{ post.image.url }}" alt="Post Image" class="post-image">
+                              </a>
+                          </div>
+                      {% endif %}
+                      <br>
+                  </div>
+                  
+              </div>
+              {% endfor %}
+          {% else %}
+              <div class="no-posts-message">
+                  <p>No posts available. Be the first to share something!</p>
+              </div>
+          {% endif %}
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+function togglePasswordVisibility(fieldId, checkbox) {
+  const field = document.getElementById(fieldId);
+  field.type = checkbox.checked ? 'text' : 'password';
+}
+
+function detectCapsLock(fieldId, warningId) {
+  const field = document.getElementById(fieldId);
+  const warning = document.getElementById(warningId);
+  if(!field || !warning) return;
+  field.addEventListener('keydown', function(e){
+    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+  });
+  field.addEventListener('keyup', function(e){
+    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+  });
+}
+</script>
+{% endblock %}

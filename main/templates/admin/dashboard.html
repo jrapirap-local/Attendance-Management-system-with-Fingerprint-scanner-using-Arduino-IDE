@@ -1,0 +1,112 @@
+{% extends 'builder.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  {% include 'admin/sidebar.html' %}
+  <div id="dashboard">
+    <h1>Dashboard</h1>
+    <hr/>
+    <div class="bento-container">
+        <!-- Card 1 -->
+        <div class="bento-card fog fog-success">
+            <h3>Users</h3>
+            <p>1,245 Active Users</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bento-card fog fog-warning">
+            <h3>News</h3>
+            <p>5 Latest Articles</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bento-card fog fog-danger">
+            <h3>Comlab Tasks</h3>
+            <p>12 Pending Tasks</p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bento-card fog fog-secondary">
+            <h3>Revenue</h3>
+            <p>$24,500 This Month</p>
+        </div>
+    </div>
+    <hr/>
+    <div class="dashboard-row">
+
+        <!-- Announcement -->
+        <div class="announcement-card fog-danger">
+            <h3>Announcement</h3>
+            <p>
+                The computer laboratory will undergo maintenance 
+                tomorrow from 2PM–4PM.
+            </p>
+            <small>June 12, 2026</small>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+
+            <h3>Recent Users</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Time In</th>
+                        <th>Time Out</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>John Doe</td>
+                        <td>john@email.com</td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>Active</td>
+                    </tr>
+
+                    <tr>
+                        <td>2</td>
+                        <td>Jane Smith</td>
+                        <td>jane@email.com</td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td>Pending</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+function togglePasswordVisibility(fieldId, checkbox) {
+  const field = document.getElementById(fieldId);
+  field.type = checkbox.checked ? 'text' : 'password';
+}
+
+function detectCapsLock(fieldId, warningId) {
+  const field = document.getElementById(fieldId);
+  const warning = document.getElementById(warningId);
+  if(!field || !warning) return;
+  field.addEventListener('keydown', function(e){
+    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+  });
+  field.addEventListener('keyup', function(e){
+    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+  });
+}
+</script>
+{% endblock %}
