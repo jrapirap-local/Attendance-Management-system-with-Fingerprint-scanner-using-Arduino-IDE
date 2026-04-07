@@ -1,0 +1,23 @@
+<div class="post-item mb-4 p-4 bg-white rounded-xl shadow 
+    {% if post.is_announcement %}border-l-4 border-green-500{% endif %}"
+    data-pinned="{{ post.is_pinned|yesno:'true,false' }}"
+    data-announcement="{{ post.is_announcement|yesno:'true,false' }}"
+>
+
+    <!-- Tags -->
+    <div class="flex gap-2 mb-2">
+        {% if post.is_pinned %}
+            <span class="text-xs bg-yellow-400 text-white px-2 py-1 rounded">📌 Pinned</span>
+        {% endif %}
+
+        {% if post.is_announcement %}
+            <span class="text-xs bg-green-500 text-white px-2 py-1 rounded">📢 Announcement</span>
+        {% endif %}
+    </div>
+
+    <p class="text-gray-800">{{ post.body }}</p>
+
+    {% if post.image %}
+        <img src="{{ post.image.url }}" class="mt-3 rounded-lg">
+    {% endif %}
+</div>

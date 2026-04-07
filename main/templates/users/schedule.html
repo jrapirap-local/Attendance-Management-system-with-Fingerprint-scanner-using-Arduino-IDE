@@ -1,0 +1,255 @@
+{% extends 'builder-user.html' %}
+{% load static %}
+{% block page %}schedule-ins{% endblock %}
+{% block content %}
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">My Schedule</h1>
+            <p class="text-sm text-gray-500">Instructor weekly schedule</p>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-6">
+        <input type="text" id="instructor_id" name="instructor_id" value="{{ request.user.id }}" hidden>
+        <!-- Schedule Table -->
+        <div class="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-700">
+
+                    <!-- Table Head -->
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wide">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Time</th>
+                            <th class="px-4 py-3 text-center font-semibold">Mon</th>
+                            <th class="px-4 py-3 text-center font-semibold">Tue</th>
+                            <th class="px-4 py-3 text-center font-semibold">Wed</th>
+                            <th class="px-4 py-3 text-center font-semibold">Thu</th>
+                            <th class="px-4 py-3 text-center font-semibold">Fri</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sat</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sun</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table Body -->
+                    <tbody id="weeklyGridBody" class="divide-y divide-gray-100">
+
+                        <tr class="hover:bg-gray-50 transition">
+                            <td colspan="8" class="text-center py-6 text-gray-400 italic">
+                                Loading schedule...
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="mt-8 bg-white overflow-x-auto rounded-lg shadow">
+            <table class="min-w-full border border-gray-200 text-sm text-left">
+                
+                <!-- HEADER -->
+                <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+                    <tr>
+                        <th class="px-4 py-3 border">Subject Code</th>
+                        <th class="px-4 py-3 border">Subject Title</th>
+                        <th class="px-4 py-3 border">Course Year & Section</th>
+                        <th class="px-4 py-3 border">Instructor</th>
+                        <th class="px-4 py-3 border text-center" colspan="3">Contact Hours</th>
+                        <th class="px-4 py-3 border">Room</th>
+                        <th class="px-4 py-3 border">No. of Students</th>
+                        <th class="px-4 py-3 border">Action</th>
+                    </tr>
+                    <tr class="bg-gray-50 text-gray-600">
+                        <th class="border"></th>
+                        <th class="border"></th>
+                        <th class="border"></th>
+                        <th class="border"></th>
+                        <th class="px-4 py-2 border">Lecture</th>
+                        <th class="px-4 py-2 border">Laboratory</th>
+                        <th class="px-4 py-2 border">Total</th>
+                        <th class="border"></th>
+                        <th class="border"></th>
+                        <th class="border"></th>
+                    </tr>
+                </thead>
+
+                <!-- BODY -->
+                <tbody class="text-gray-700">
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 border">ITEC 200B</td>
+                        <td class="px-4 py-3 border">CAPSTONE PROJECT B</td>
+                        <td class="px-4 py-3 border">BSIT 2-1</td>
+                        <td class="px-4 py-3 border">Carlo Centino</td>
+                        <td class="px-4 py-3 border text-center">2</td>
+                        <td class="px-4 py-3 border text-center">3</td>
+                        <td class="px-4 py-3 border text-center">5</td>
+                        <td class="px-4 py-3 border">tba</td>
+                        <td class="px-4 py-3 border">56</td>
+                        <td class="px-4 py-3 border space-x-2">
+                            <button class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">
+                                Edit
+                            </button>
+                            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 border">ITEC 200B</td>
+                        <td class="px-4 py-3 border">CAPSTONE PROJECT B</td>
+                        <td class="px-4 py-3 border">BSIT 2-2</td>
+                        <td class="px-4 py-3 border">Carlo Agassi</td>
+                        <td class="px-4 py-3 border text-center">1</td>
+                        <td class="px-4 py-3 border text-center">2</td>
+                        <td class="px-4 py-3 border text-center">3</td>
+                        <td class="px-4 py-3 border">301</td>
+                        <td class="px-4 py-3 border">30</td>
+                        <td class="px-4 py-3 border space-x-2">
+                            <button class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">
+                                Edit
+                            </button>
+                            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 border">GNED 101</td>
+                        <td class="px-4 py-3 border">INTRODUCTION TO COMPUTING</td>
+                        <td class="px-4 py-3 border">BSIT 1-1</td>
+                        <td class="px-4 py-3 border">Jeff Froilan Lendio</td>
+                        <td class="px-4 py-3 border text-center">2</td>
+                        <td class="px-4 py-3 border text-center">2</td>
+                        <td class="px-4 py-3 border text-center">4</td>
+                        <td class="px-4 py-3 border">303</td>
+                        <td class="px-4 py-3 border">40</td>
+                        <td class="px-4 py-3 border space-x-2">
+                            <button class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">
+                                Edit
+                            </button>
+                            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<script>
+    function timeToMinutes(t) {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+    }   
+
+    const timeSlots = [];
+
+    for (let hour = 7; hour <= 22; hour++) {
+        const formatted = String(hour).padStart(2, '0') + ":00";
+        timeSlots.push(formatted);
+    }
+
+    const subjectColors = [
+        "bg-green-300",
+        "bg-blue-300",
+        "bg-yellow-300",
+        "bg-purple-300",
+        "bg-pink-300"
+    ];    
+
+    const subjectColorMap = {};
+    let colorIndex = 0;
+
+    function getSubjectColor(subject) {
+        if (!subjectColorMap[subject]) {
+            subjectColorMap[subject] = subjectColors[colorIndex % subjectColors.length];
+            colorIndex++;
+        }
+        return subjectColorMap[subject];
+    }
+
+
+    async function loadWeeklyGrid() {
+        const body = document.getElementById("weeklyGridBody");
+
+        const res = await fetch(`/api/schedules/?instructor_id={{ instructor.id }}`);
+        const data = await res.json();
+
+        const days = ["M","T","W","TH","F","SAT","SUN"];
+
+        // Track merged cells
+        const skipMap = {};
+
+        body.innerHTML = "";
+
+        timeSlots.forEach((time, rowIndex) => {
+            const row = document.createElement("tr");
+
+            let cells = `<td class="border px-2 py-2 font-medium">${time}</td>`;
+
+            days.forEach(day => {
+
+                const key = `${day}-${rowIndex}`;
+
+                // ⛔ Skip if part of merged cell
+                if (skipMap[key]) return;
+
+                const match = data.schedules.find(s => {
+                    const scheduleDays = s.day.split(",").map(d => d.trim());
+
+                    return scheduleDays.includes(day) &&
+                        timeToMinutes(s.start) <= timeToMinutes(time) &&
+                        timeToMinutes(s.end) > timeToMinutes(time);
+                });
+
+                if (match) {
+
+                    // 🔥 Calculate rowspan
+                    const startMin = timeToMinutes(match.start);
+                    const endMin = timeToMinutes(match.end);
+
+                    let span = 0;
+
+                    for (let i = rowIndex; i < timeSlots.length; i++) {
+                        const slotMin = timeToMinutes(timeSlots[i]);
+
+                        if (slotMin >= startMin && slotMin < endMin) {
+                            span++;
+                            skipMap[`${day}-${i}`] = true;
+                        }
+                    }
+
+                    // remove skip for first row (we render it)
+                    delete skipMap[`${day}-${rowIndex}`];
+
+                    const colorClass = getSubjectColor(match.subject);
+
+                    cells += `
+                        <td rowspan="${span}" class="border-l-4 border-green-600 px-2 py-2 ${colorClass} text-center">
+                            <div class="font-semibold text-sm">${match.subject}</div>
+                            <div class="text-xs text-gray-600">[<i> ${match.room} </i>]</div>
+                            <div class="text-xs">${match.start} - ${match.end}</div>
+                        </td>
+                    `;
+
+                } else {
+                    cells += `<td class="border px-2 py-2"></td>`;
+                }
+
+            });
+
+            row.innerHTML = cells;
+            body.appendChild(row);
+        });
+    }
+
+
+    loadWeeklyGrid();
+</script>
+{% endblock %}

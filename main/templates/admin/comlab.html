@@ -1,0 +1,1279 @@
+{% extends 'builder.html' %}
+{% block page %}comlab{% endblock %}
+{% load static %}
+{% block content %}
+
+<style>
+/* Professional thin scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9; /* light gray */
+    border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #cbd5f5, #94a3b8);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #01852d; /* soft slate */
+    border-radius: 9999px;
+    transition: background 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #018b23; /* darker on hover */
+}
+
+/* Firefox */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #007a29 #f1f5f9;
+}
+</style>
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800"> Computer Laboratory</h1>
+            <p class="text-sm text-gray-500">Manage laboratories, equipment, and reports</p>
+        </div>
+    </div>
+    
+    <!-- Cards Section -->
+    <div class="flex gap-6">
+
+        <!-- Add Card (fixed, does NOT scroll) -->
+        <div onclick="openAddComlabModal()"
+            class="min-w-[240px] h-[180px] bg-white/70 backdrop-blur-xl 
+                rounded-2xl p-5 shadow-sm hover:shadow-lg 
+                transition-all duration-300 cursor-pointer 
+                flex flex-col items-center justify-center 
+                border border-dashed border-gray-300 hover:border-green-500 group">
+
+            <span class="text-4xl text-gray-400 group-hover:scale-110 transition">+</span>
+            <h3 class="mt-2 font-medium text-gray-600">Add Laboratory</h3>
+        </div>
+        <!-- Scrollable Dynamic Cards -->
+        <div class="overflow-x-auto flex-1 p-2 scroll-smooth snap-x snap-mandatory custom-scrollbar">
+            <div class="flex gap-6 min-w-max" id="carousel">
+                {% for item in cl %}
+
+                <div onclick="openPreview(this)" 
+                    data-id="{{ item.id }}"
+                    id="carousel-item-{{ item.id }}"
+                    data-comlab="{{ item.comlab }}"
+                    data-location="{{ item.location }}"
+                    data-image="{% if item.cards %}{{ item.cards.url }}{% else %}{% static 'image/comlab.jpg' %}{% endif %}"
+                    class="min-w-[240px] bg-white rounded-2xl shadow-sm hover:shadow-xl 
+                    transition-all duration-300 cursor-pointer overflow-hidden 
+                    snap-center border border-gray-100 hover:-translate-y-1">
+                    <img src="{% if item.cards %}{{ item.cards.url }}{% else %}{% static 'image/comlab.jpg' %}{% endif %}" 
+                        class="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105">
+
+                    <div class="p-4 text-center">
+                        <h3 class="font-semibold text-gray-800">{{ item.comlab }}</h3>
+                        <p class="text-sm text-gray-500">{{ item.location }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-10 bg-white rounded-2xl shadow-lg p-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Equipment List</h2>
+
+            <button onclick="openEquipmentModal()"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-500 transition">
+                + Equipment
+            </button>
+        </div>
+        
+        <!-- Add Equipment Modal -->
+        <div id="addEquipmentModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+            <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg relative">
+
+                <!-- Close Button -->
+                <button onclick="closeEquipmentModal()"
+                        class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-lg">
+                    ✕
+                </button>
+
+                <!-- Title -->
+                <h2 class="text-xl font-bold text-gray-800 mb-4">
+                    Add Equipment Record
+                </h2>
+
+                <!-- Form -->
+                <form method="POST" id="addEquipmentForm" class="space-y-4">
+                    {% csrf_token %}
+
+                    <!-- Borrower Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">
+                            Borrower Name
+                        </label>
+                        <input type="text" name="name"
+                            placeholder="Enter borrower name"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+                            required>
+                    </div>
+
+                    <!-- Date & Time -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Date</label>
+                            <input type="date" name="date"
+                                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+                                required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Time</label>
+                            <input type="time" name="time"
+                                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+                                required>
+                        </div>
+                    </div>
+
+                    <!-- Equipment -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">
+                            Equipment
+                        </label>
+                        <input type="text" name="equipment"
+                            placeholder="e.g. Mouse, Keyboard, Monitor"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+                            required>
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">
+                            Status
+                        </label>
+                        <select name="status"
+                                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500">
+                            <option value="borrowed">Borrowed</option>
+                            <option value="returned">Returned</option>
+                        </select>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex justify-end space-x-2 pt-2">
+                        <button type="button" onclick="closeEquipmentModal()"
+                                class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">
+                            Cancel
+                        </button>
+
+                        <button type="submit"
+                                class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-500">
+                            Save Record
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>            
+
+        <!-- Equipment Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="tblEQ">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Name</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Date</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Time</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Equipment</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Status</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-200" id="equipmentTableBody">
+
+                </tbody>
+            </table>
+        </div>           
+    </div>
+
+    <!-- Comlab Reports Section -->
+    <div class="mt-10 bg-white rounded-2xl shadow-lg p-6">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Comlab Reports</h2>
+
+            <button onclick="openReportModal()"
+                    class="bg-blue-600 text-white px-5 py-2 rounded-xl shadow hover:bg-blue-500 transition">
+                + Add Report
+            </button>
+        </div>
+
+        <!-- Add Report Modal -->
+        <div id="reportModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg relative">
+
+                <!-- Close -->
+                <button onclick="closeReportModal()"
+                        class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-lg">✕</button>
+
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Add Report</h3>
+
+                <form method="POST" id="addReportForm" enctype="multipart/form-data" class="space-y-3">
+                    {% csrf_token %}
+
+                    <div>
+                        <label class="text-sm text-gray-600">Name</label>
+                        <input type="text" name="name"
+                            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                            required>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm text-gray-600">Date</label>
+                            <input type="date" name="date"
+                                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                required>
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-gray-600">Time</label>
+                            <input type="time" name="time"
+                                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Report</label>
+                        <textarea name="report" rows="3"
+                                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                                required></textarea>
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-gray-600">Attachment (Optional)</label>
+                        <input type="file" name="attachment"
+                            class="w-full border rounded-lg px-3 py-2">
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-500 transition">
+                        Submit Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="editReportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div class="bg-white rounded-lg p-6 w-96 relative">
+                <h2 class="text-xl font-bold mb-4">Edit Report</h2>
+                <form id="editReportForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="report_id" id="edit_report_id">
+
+                    <div class="mb-2">
+                        <label class="text-sm text-gray-600">Name</label>
+                        <input type="text" name="name" id="edit_name" class="w-full border rounded-lg px-3 py-2" required>
+                    </div>
+
+                    <!-- <div class="grid grid-cols-2 gap-3 mb-2">
+                        <div>
+                            <label class="text-sm text-gray-600">Date</label>
+                            <input type="date" name="date" id="edit_date" class="w-full border rounded-lg px-3 py-2" required>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600">Time</label>
+                            <input type="time" name="time" id="edit_time" class="w-full border rounded-lg px-3 py-2" required>
+                        </div>
+                    </div> -->
+
+                    <div class="mb-2">
+                        <label class="text-sm text-gray-600">Report</label>
+                        <textarea name="report" id="edit_report" rows="3" class="w-full border rounded-lg px-3 py-2" required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-sm text-gray-600">Attachment (Optional)</label>
+                        <input type="file" name="attachment" id="edit_attachment" class="w-full border rounded-lg px-3 py-2">
+                    </div>
+
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" id="closeEditModal" class="px-4 py-2 bg-gray-300 rounded-lg">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>            
+
+        <!-- Reports Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="tblReport">
+                
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Name</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Date</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Time</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Report</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Attachment</th>
+                        <th class="px-4 py-2 text-left text-sm text-gray-500">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-200">
+
+                </tbody>
+
+            </table>
+        </div>
+    </div>    
+</main>
+
+<!-- Preview & Delete Modal -->
+<div id="previewModal" 
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+
+    <div class="relative bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-[fadeIn_.2s_ease-out]">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800">Preview</h3>
+
+            <!-- Delete Button -->
+            <button type="button"
+                    id="modalDelBtn"
+                    class="flex items-center justify-center w-9 h-9 rounded-full text-red-400 hover:text-red-900 hover:bg-red-50 transition">
+                Delete
+            </button>
+        </div>
+
+        <!-- Image -->
+        <div class="w-full h-52 bg-gray-100 overflow-hidden">
+            <img id="previewImage" 
+                 class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+        </div>
+
+        <!-- Content -->
+        <div class="px-6 py-5 space-y-2">
+            <h2 id="previewTitle" 
+                class="text-xl font-semibold text-gray-900 leading-tight"></h2>
+
+            <p id="previewLocation" 
+               class="text-sm text-gray-500"></p>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex justify-end items-center gap-3 px-5 py-4 border-t border-gray-100 bg-gray-50">
+            
+            <button onclick="closePreview()" 
+                    class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition">
+                Cancel
+            </button>
+
+            <button onclick="openEdit()" 
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition">
+                Edit
+            </button>
+
+        </div>
+    </div>
+</div>    
+
+<div id="editModal" 
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+
+    <div class="relative bg-white w-full max-w-md rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-[fadeIn_.2s_ease-out]">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800">Edit Comlab</h3>
+
+            <!-- Close Button -->
+            <button type="button"
+                    onclick="closeEdit()"
+                    class="flex items-center justify-center w-9 h-9 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
+                ✕
+            </button>
+        </div>
+
+        <!-- Form -->
+        <form id="editForm" class="px-6 py-5 space-y-4">
+            {% csrf_token %}
+
+            <input type="hidden" id="editId" name="id">
+
+            <!-- Comlab Name -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Comlab Name</label>
+                <input type="text" id="editComlab" name="comlab"
+                    class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+            </div>
+
+            <!-- Location -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Location</label>
+                <input type="text" id="editLocation" name="location"
+                    class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+            </div>
+
+            <!-- Image Upload -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Image</label>
+                <input type="file" id="editImage" name="cards"
+                    class="w-full text-sm border border-gray-200 rounded-lg file:mr-3 file:px-3 file:py-1.5 file:border-0 file:rounded-md file:bg-gray-100 file:text-gray-600 hover:file:bg-gray-200 transition">
+            </div>
+        </form>
+
+        <!-- Footer -->
+        <div class="flex justify-end items-center gap-3 px-5 py-4 border-t border-gray-100 bg-gray-50">
+
+            <button type="button" onclick="closeEdit()"
+                class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition">
+                Cancel
+            </button>
+
+            <button type="submit" form="editForm"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 transition">
+                Save Changes
+            </button>
+
+        </div>
+    </div>
+</div>
+
+<!-- Add Comlab Modal -->
+<div id="addComlabModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg relative">
+
+        <!-- Close Button -->
+        <button onclick="closeAddComlabModal()"
+                class="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-lg">
+            ✕
+        </button>
+
+        <!-- Title -->
+        <h2 class="text-xl font-bold text-gray-800 mb-4">
+            Add Computer Laboratory
+        </h2>
+
+        <!-- Form -->
+        <form id="addComlabForm" method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- Name -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">
+                    Laboratory Name
+                </label>
+                <input type="text" name="comlab"
+                    placeholder="Enter laboratory name"
+                    class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+                    required>
+            </div>
+
+            <!-- Location -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">
+                    Location
+                </label>
+                <input type="text" name="location"
+                    placeholder="e.g. Building A - Room 204"
+                    class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500"
+                    required>
+            </div>
+
+            <!-- Image Upload -->
+            <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">
+                    Laboratory Image
+                </label>
+
+                <input type="file" name="cards" accept="image/*"
+                    onchange="previewImage(event)"
+                    class="w-full border rounded-lg px-3 py-2">
+
+                <!-- Preview -->
+                <img id="imagePreview" 
+                    class="mt-3 hidden w-full h-40 object-cover rounded-lg border">
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-end space-x-2 pt-2">
+                <button type="button" onclick="closeAddComlabModal()"
+                        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-500">
+                    Save
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- JS -->
+<script>
+    // Load automatically when page opens
+    $(document).ready(function() {
+        var tblEQ = $("#tblEQ").DataTable({dom: 'frtip', responsive: true});
+        var tblReport = $("#tblReport").DataTable({dom: 'frtip', responsive: true});
+        params = new URLSearchParams(window.location.search);
+        openId = params.get("open");        
+        loadEquipmentData(); // load data after init
+        loadReportData();
+    });
+   
+    
+    let currentModalId = null; // store current item ID
+    let currentItem = {};
+    //#region Computer Laboratory
+    // OPEN PREVIEW
+    function openPreview(el) {
+        currentItem = {
+            id: el.dataset.id,
+            comlab: el.dataset.comlab,
+            location: el.dataset.location,
+            image: el.dataset.image
+        };
+
+        document.getElementById('previewImage').src = currentItem.image;
+        document.getElementById('previewTitle').innerText = currentItem.comlab;
+        document.getElementById('previewLocation').innerText = currentItem.location;
+
+        document.getElementById('previewModal').classList.remove('hidden');
+        document.getElementById('previewModal').classList.add('flex');
+        currentModalId = currentItem.id; // save ID for delete/edit
+    }
+
+    // Confirm delete action
+    function confirmDelete() {
+        pk = currentModalId;
+        fetch("", {  // same URL
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'action': 'delete',
+                'id': pk
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+
+                // Remove table row (if exists)
+                document.getElementById(`comlab-row-${pk}`)?.remove();
+
+                // ✅ Remove card from scroll carousel
+                document.getElementById(`carousel-item-${pk}`)?.remove();
+                closePreview();
+                // Toast
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: data.message,
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        })
+        .catch(() => Swal.fire('Error', 'Something went wrong!', 'error'));
+    }
+
+    // CLOSE PREVIEW
+    function closePreview() {
+        document.getElementById('previewModal').classList.add('hidden');
+    }
+
+    // OPEN EDIT
+    function openEdit() {
+        closePreview();
+
+        document.getElementById('editId').value = currentItem.id;
+        document.getElementById('editComlab').value = currentItem.comlab;
+        document.getElementById('editLocation').value = currentItem.location;
+
+        document.getElementById('editModal').classList.remove('hidden');
+        document.getElementById('editModal').classList.add('flex');
+    }
+
+    // CLOSE EDIT
+    function closeEdit() {
+        document.getElementById('editModal').classList.add('hidden');
+    }
+
+    function openAddComlabModal() {
+        const modal = document.getElementById('addComlabModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeAddComlabModal() {
+        document.getElementById('addComlabModal').classList.add('hidden');
+    }
+
+    // Image Preview
+    function previewImage(event) {
+        const preview = document.getElementById('imagePreview');
+        preview.src = URL.createObjectURL(event.target.files[0]);
+        preview.classList.remove('hidden');
+    }
+
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }   
+    
+    document.getElementById('addComlabForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const form = document.getElementById('addComlabForm');
+        const formData = new FormData(form);
+
+        fetch("{% url 'add_comlab' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const container = document.getElementById('carousel');
+
+                // ✅ Create new card with correct ID & dataset for modal
+                const newCard = document.createElement('div');
+                newCard.id = `carousel-item-${data.id}`;
+                newCard.dataset.id = data.id;
+                newCard.dataset.comlab = data.name;
+                newCard.dataset.location = data.location;
+                newCard.dataset.image = data.image_url;
+                newCard.className = "relative min-w-[220px] bg-white rounded-2xl shadow-md hover:shadow-xl transition cursor-pointer overflow-hidden snap-center";
+                newCard.onclick = function() { openPreview(this); };
+
+                // ✅ Card inner HTML
+                newCard.innerHTML = `
+                    <img src="${data.image_url}" class="w-full h-40 object-cover">
+                    <div class="p-4 text-center">
+                        <h3 class="font-semibold text-gray-800">${data.name}</h3>
+                        <p class="text-sm text-gray-500">${data.location}</p>
+                    </div>
+                `;
+
+                // ✅ Append to carousel
+                container.appendChild(newCard);
+
+                // ✅ Scroll to new card
+                newCard.scrollIntoView({ behavior: "smooth", inline: "start" });
+
+                // ✅ Reset form and hide preview
+                form.reset();
+                const previewImg = document.getElementById('imagePreview');
+                if (previewImg) previewImg.classList.add('hidden');
+
+                // ✅ Close modal
+                closeAddComlabModal();
+
+                // ✅ SweetAlert success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Comlab successfully added!',
+                    text: `${data.name} - ${data.location}`,
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error saving Data',
+                    text: data.error || 'Unknown error',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Something went wrong.',
+                text: error,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+            });
+            console.error(error);
+        });
+    });
+    
+    document.getElementById('editForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const id = currentModalId;
+        const formData = new FormData(this);
+        formData.append('action', 'update');
+
+        fetch('/comlab/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Update modal preview
+                document.getElementById('previewTitle').innerText = data.comlab;
+                document.getElementById('previewLocation').innerText = data.location;
+                if (data.image) {
+                    document.getElementById('previewImage').src = data.image;
+                }
+
+                // Update carousel card instantly
+                const card = document.getElementById(`carousel-item-${id}`);
+                if (card) {
+                    card.dataset.comlab = data.comlab;
+                    card.dataset.location = data.location;
+                    card.querySelector('h3').innerText = data.comlab;
+                    card.querySelector('p').innerText = data.location;
+                    if (data.image) card.querySelector('img').src = data.image;
+                }
+
+                Swal.fire('Updated!', 'Lab info has been updated.', 'success');
+                closeEdit();
+            } else {
+                Swal.fire('Error!', data.error || 'Failed to update.', 'error');
+            }
+        });
+    });    
+
+    document.getElementById('modalDelBtn').addEventListener('click', function(e){
+        e.stopPropagation(); // prevent other click handlers
+
+        if (!currentModalId) return;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will permanently delete this lab!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let formData = new FormData();
+                formData.append('action', 'delete');
+                formData.append('id', currentModalId);
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+                fetch('/comlab/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove card from carousel
+                        const card = document.getElementById(`carousel-item-${currentModalId}`);
+                        if (card) card.remove();
+
+                        Swal.fire('Deleted!', data.message, 'success');
+                        closePreview();
+                        currentModalId = null;
+                    } else {
+                        Swal.fire('Error!', data.message || 'Something went wrong.', 'error');
+                    }
+                });
+            }
+        });
+    });    
+
+//#endregion
+
+// #region IncidentREport 
+    function openReportModal() {
+        const modal = document.getElementById('reportModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // ✅ Autofill date & time
+        setCurrentDateTime(
+            document.querySelector('#addReportForm input[name="date"]'),
+            document.querySelector('#addReportForm input[name="time"]')
+        );
+    }
+
+    function loadReportData() {
+        fetch("{% url 'get_reports' %}")
+        .then(response => response.json())
+        .then(data => {
+
+            let table = $('#tblReport').DataTable();
+            table.clear(); // clear existing rows
+
+            if (data.rp.length === 0) {
+                table.draw();
+                return;
+            }
+
+            data.rp.forEach(item => {
+
+                // Format date as MM/DD/YYYY
+                let dateObj = new Date(item.date);
+                let formattedDate = (dateObj.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                                    dateObj.getDate().toString().padStart(2, '0') + '/' +
+                                    dateObj.getFullYear();
+
+                // Attachment link
+                let attachmentHtml = item.attachment 
+                    ? `<a href="${item.attachment}" target="_blank" download style="text-decoration: underline; color: #1d4ed8;">${item.attachment.split('/').pop()}</a>` 
+                    : '<span style="color: #6b7280; font-style: italic;">No Attachment</span>';
+
+                table.row.add([
+                    item.name,
+                    formattedDate,
+                    item.time,
+                    item.report,
+                    attachmentHtml,
+                    `<button data-id="${item.id}" class="edit-btn hover:underline text-sm text-blue-500 cursor-pointer">Edit</button> <button data-id="${item.id}" class="delete-btn hover:underline text-sm text-red-500 cursor-pointer">Delete</button>`
+                ]);
+            });
+
+            table.draw(); // redraw table
+        })
+        .catch(error => {
+            Swal.fire('Error', 'Failed to load data!', 'error');
+            console.error(error);
+        });
+    }
+
+    $("#addReportForm").on("submit", function(e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        // 🔹 Confirmation before submit
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "Do you want to submit this report?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, submit it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: "{% url 'add_report' %}",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === "success") {
+                            loadReportData();
+                            closeReportModal();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Report submitted successfully!',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            $("#addReportForm")[0].reset();
+
+                            // reload DataTable
+                            $('#reportTable').DataTable().ajax.reload();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Something went wrong!'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Server Error',
+                            text: 'Failed to submit report.'
+                        });
+                    }
+                });
+
+            }
+        });
+    });
+
+    $('#tblReport').on('click', '.edit-btn', function() {
+        let rowData = $(this).closest('tr').children('td');
+        let reportId = $(this).data('id');
+
+        $('#edit_report_id').val(reportId);
+        $('#edit_name').val(rowData.eq(0).text());
+        
+        // Convert date from MM/DD/YYYY back to YYYY-MM-DD for input
+        let dateParts = rowData.eq(1).text().split('/');
+        $('#edit_date').val(`${dateParts[2]}-${dateParts[0].padStart(2,'0')}-${dateParts[1].padStart(2,'0')}`);
+        
+        // Convert time back to 24-hour format for input
+        $('#edit_time').val(new Date(`1970-01-01 ${rowData.eq(2).text()}`).toTimeString().slice(0,5));
+        
+        $('#edit_report').val(rowData.eq(3).text());
+
+        $('#editReportModal').removeClass('hidden');
+    }); 
+
+    $('#editReportForm').on('submit', function(e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+        let reportId = $('#edit_report_id').val();
+
+        Swal.fire({
+            title: 'Save changes?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, save',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/edit-report/${reportId}/`,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: 'Report has been updated.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            $('#editReportModal').addClass('hidden');
+                            $('#editReportForm')[0].reset();
+
+                            // Reload table
+                            // if ($.fn.DataTable.isDataTable("#tblReport")) {
+                            //     $("#tblReport").DataTable().destroy();
+                            // }
+                            // $('#tblReport').DataTable().ajax.reload();
+                            loadReportData();
+                        } else {
+                            Swal.fire('Error', response.message || 'Failed to update', 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Server error while updating report', 'error');
+                    }
+                });
+            }
+        });
+    });    
+    
+    $('#closeEditModal').on('click', function() {
+        $('#editReportModal').addClass('hidden');
+        $('#editReportForm')[0].reset();
+    });    
+
+    function closeReportModal() {
+        document.getElementById('reportModal').classList.add('hidden');
+    }
+
+    // Handle delete click
+    $('#tblReport').on('click', '.delete-btn', function() {
+        let reportId = $(this).data('id');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This report will be permanently deleted!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/delete-report/${reportId}/`,
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Report has been deleted.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            // Reload DataTable
+                            // $('#tblReport').DataTable().ajax.reload();
+                            loadReportData();
+                        } else {
+                            Swal.fire('Error', response.message || 'Failed to delete report', 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'Server error while deleting report', 'error');
+                    }
+                });
+            }
+        });
+    });  
+
+// #endregion
+
+// #region Equipment
+
+    function openEquipmentModal() {
+        const modal = document.getElementById('addEquipmentModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // ✅ Autofill date & time
+        setCurrentDateTime(
+            document.querySelector('#addEquipmentForm input[name="date"]'),
+            document.querySelector('#addEquipmentForm input[name="time"]')
+        );
+    }
+
+    function loadEquipmentData() {
+        fetch("{% url 'equipment_list' %}")
+        .then(response => response.json())
+        .then(data => {
+
+            let table = $('#tblEQ').DataTable();
+            table.clear(); // clear existing rows
+
+            if (data.eq.length === 0) {
+                table.draw();
+                return;
+            }
+
+            data.eq.forEach(item => {
+                // Format date as MM/DD/YYYY
+                let dateObj = new Date(item.date);
+                let formattedDate = (dateObj.getMonth() + 1).toString().padStart(2, '0') + '/' +
+                                    dateObj.getDate().toString().padStart(2, '0') + '/' +
+                                    dateObj.getFullYear();
+                
+
+                // Format time (12-hour format)
+                let time = new Date(`1970-01-01T${item.time}`);
+                let formattedTime = time.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                let statusHTML = item.status === "returned"
+                    ? `<span class="text-green-600 font-medium">Returned</span>`
+                    : `<span class="text-red-500 font-medium">Borrowed</span>`;
+
+                let actionHTML = item.status !== "returned"
+                    ? `
+                    <button onclick="markReturned(${item.id})"
+                        class="bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-500">
+                        Mark Returned
+                    </button>`
+                    : `<span class="text-green-600">✔</span>`;
+
+                table.row.add([
+                    item.name,
+                    formattedDate,
+                    formattedTime,
+                    item.equipment,
+                    statusHTML,
+                    actionHTML
+                ]);
+            });           
+
+            table.draw(); // redraw table
+        })
+
+        .then(item => {
+            if (openId) {
+                // find the row with matching ID
+                console.log(openId);
+                const row = document.querySelector(`[data-id="${openId}"]`);
+
+                if (row) {
+                    openPreview(row);
+                } else {
+                    console.warn("Row not found for ID:", openId);
+                }
+            }
+            params = "";
+            openId = "";
+        })         
+        .catch(error => {
+            Swal.fire('Error', 'Failed to load data!', 'error');
+            console.error(error);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const form = document.getElementById("addEquipmentForm");
+
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            // Show confirmation before saving
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you want to save this record?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, save it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if(result.isConfirmed) {
+                    // If confirmed, submit via AJAX
+                    const formData = new FormData(form);
+
+                    fetch("{% url 'save_equipment' %}", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}",
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            // Success message
+                            Swal.fire({
+                                title: 'Saved!',
+                                text: data.message,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            form.reset();           // clear form
+                            closeEquipmentModal();  // close modal
+
+                            // Optional: dynamically add record to table
+                            const table = document.getElementById("equipmentTableBody");
+                            if(table) {
+                                const row = `<tr>
+                                    <td>${data.data.name}</td>
+                                    <td>${data.data.date}</td>
+                                    <td>${data.data.time}</td>
+                                    <td>${data.data.equipment}</td>
+                                    <td>${data.data.status}</td>
+                                </tr>`;
+                                table.insertAdjacentHTML("beforeend", row);
+                            }
+                            loadEquipmentData();
+                        } else {
+                            // Error message
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'Something went wrong!', 'error');
+                        console.error("Error:", error);
+                    });
+                }
+            });
+        });
+    });
+
+    function markReturned(id) {
+        Swal.fire({
+            title: 'Mark as returned?',
+            text: "This equipment will be marked as returned.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#16a34a',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/mark-returned/${id}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Updated!', data.message, 'success');
+                        loadEquipmentData(); // refresh table
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                });
+            }
+        });
+    }  
+
+    function closeEquipmentModal() {
+        document.getElementById('addEquipmentModal').classList.add('hidden');
+    }    
+
+// #endregion
+
+function setCurrentDateTime(dateInput, timeInput) {
+    const now = new Date();
+
+    // Format YYYY-MM-DD (for input[type="date"])
+    const date = now.toISOString().split('T')[0];
+
+    // Format HH:MM (24-hour for input[type="time"])
+    const time = now.toTimeString().slice(0,5);
+
+    if (dateInput) dateInput.value = date;
+    if (timeInput) timeInput.value = time;
+}
+
+</script>
+
+{% endblock %}

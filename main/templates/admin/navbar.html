@@ -1,0 +1,86 @@
+{% block navbar %}
+<!-- ✅ Navbar -->
+<nav class="bg-white shadow-md sticky top-0 z-50">
+  <div class="max-w-screen mx-auto px-6 py-3 flex justify-between items-center">
+
+    <div class="flex items-center justify-center p-6 flex-shrink-0">
+        <div class="bg-white p-2 rounded-full shadow-md">
+            <img src="{% static 'image/logoams.png' %}" 
+                alt="Logo" 
+                class="h-14 w-14 object-contain rounded-full">
+        </div>
+    </div>
+
+    <!-- Right Side -->
+    <div class="flex items-center space-x-6">
+
+      <!-- Optional Nav Links -->
+      <a href="#" class="text-gray-600 hover:text-green-600 text-sm font-medium">Dashboard</a>
+      <a href="#" class="text-gray-600 hover:text-green-600 text-sm font-medium">Attendance</a>
+
+      <!-- User Dropdown -->
+      <div class="relative">
+        <button id="userMenuBtn"
+                class="flex items-center space-x-2 focus:outline-none">
+          
+          <!-- Avatar -->
+          <div class="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center font-semibold">
+            {{ request.user.username|slice:":1"|upper }}
+          </div>
+
+          <!-- Username -->
+          <span class="text-gray-700 font-medium text-sm hidden md:block">
+            {{ request.user.username }}
+          </span>
+
+          <!-- Arrow -->
+          <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div id="userDropdown"
+             class="hidden absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+
+          <a href=""
+             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            👤 Profile
+          </a>
+
+          <a href=""
+             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+            ⚙️ Settings
+          </a>
+
+          <hr>
+
+          <a href=""
+             class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+            🚪 Logout
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+<script>
+  const btn = document.getElementById('userMenuBtn');
+  const dropdown = document.getElementById('userDropdown');
+
+  btn.addEventListener('click', () => {
+    dropdown.classList.toggle('hidden');
+  });
+
+  // Close when clicking outside
+  window.addEventListener('click', function(e) {
+    if (!btn.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,267 @@
+{% extends 'builder.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto p-6 space-y-8">
+
+  <!-- Profile Header -->
+  <div class="bg-white/80 backdrop-blur border border-gray-200 shadow-lg rounded-3xl p-6 flex flex-col md:flex-row items-center md:items-center md:space-x-6">
+
+    <!-- Avatar -->
+    <div class="relative">
+      <img src="{% if user.profile_pic %}{{ user.profile_pic.url  }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" class="h-32 w-32 rounded-full object-cover ring-4 ring-green-100 shadow" />
+    </div>
+
+    <!-- Info -->
+    <div class="text-center md:text-left flex-1 mt-4 md:mt-0">
+      <h2 class="text-2xl font-semibold text-gray-800">{{ user.first_name }} {{ user.last_name }}</h2>
+      <p class="text-gray-500">@{{ user.username }}</p>
+      <p class="text-gray-600 mt-1 text-sm">{{ user.profile.position }} • {{ user.profile.organization }}</p>
+      <input type="hidden" id="edit_id" value="{{ user.id }}">
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-2 mt-4 md:mt-0">
+      <button id="editProfileBtn" class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-500 text-sm shadow">
+        Edit Profile
+      </button>
+      <button id="uploadPicBtn" class="px-4 py-2 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 text-sm">Photo</button>
+      <button id="changePasswordBtn" class="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-500 text-sm shadow">Password</button>
+    </div>
+  </div>
+
+  <!-- Profile Cards -->
+  <div class="grid md:grid-cols-2 gap-6">
+
+    <!-- Personal Info -->
+    <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm hover:shadow-lg transition">
+      <h3 class="text-lg font-semibold mb-4 text-gray-800">Personal Info</h3>
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">First Name</span><span>{{ user.first_name }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Last Name</span><span>{{ user.last_name }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Middle</span><span>{{ user.middle_name }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Birthday</span><span>{{ user.birthday|date:"M d, Y" }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Gender</span><span>{{ user.gender }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Contact</span><span>{{ user.contact_number }}</span></div>
+      </div>
+    </div>
+
+    <!-- Education Info -->
+    <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm hover:shadow-lg transition">
+      <h3 class="text-lg font-semibold mb-4 text-gray-800">Education</h3>
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Degree</span><span>{{ user.degree }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">School</span><span>{{ user.school }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Field</span><span>{{ user.field_of_study }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Year</span><span>{{ user.graduation_year }}</span></div>
+      </div>
+    </div>
+
+    <!-- Account Info -->
+    <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm md:col-span-2 hover:shadow-lg transition">
+      <h3 class="text-lg font-semibold mb-4 text-gray-800">Account</h3>
+      <div class="grid md:grid-cols-2 gap-4 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Username</span><span>{{ user.username }}</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Email</span><span>{{ user.email }}</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== Edit Profile Modal ===== -->
+<div id="editProfileModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 modal-backdrop">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
+    <button id="closeEditModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">✕</button>
+    <h2 class="text-lg font-semibold mb-4">Edit Profile</h2>
+    <form id="editProfileForm" class="grid md:grid-cols-2 gap-4">
+      {% csrf_token %}
+      <input name="first_name" value="{{ user.first_name }}" class="border p-2 rounded-lg" placeholder="First Name" required>
+      <input name="last_name" value="{{ user.last_name }}" class="border p-2 rounded-lg" placeholder="Last Name" required>
+      <input name="middle_name" value="{{ user.middle_name }}" class="border p-2 rounded-lg" placeholder="Middle Name">
+      <input name="contact_number" value="{{ user.contact_number }}" class="border p-2 rounded-lg" placeholder="Contact">
+      <input name="position" value="{{ user.position }}" class="border p-2 rounded-lg" placeholder="Position">
+      <input name="organization" value="{{ user.organization }}" class="border p-2 rounded-lg" placeholder="Organization">
+      <input name="degree" value="{{ user.degree }}" class="border p-2 rounded-lg" placeholder="Degree">
+      <input name="school" value="{{ user.school }}" class="border p-2 rounded-lg" placeholder="School">
+      <div class="md:col-span-2">
+        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-500">Save Changes</button>
+      </div>
+    </form>
+    <p id="profileStatus" class="text-sm text-center mt-2 hidden"></p>
+  </div>
+</div>
+
+<!-- ===== Upload Photo Modal ===== -->
+<div id="uploadModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 modal-backdrop">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 relative">
+    <button id="closeUploadModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">✕</button>
+    <h2 class="text-lg font-semibold mb-4">Update Profile Photo</h2>
+    <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+      <div class="flex justify-center">
+        <img id="imagePreview" src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+             class="w-28 h-28 rounded-full object-cover border" />
+      </div>
+      <input type="file" name="image" id="profilePic" accept="image/*" class="w-full border rounded-lg p-2" required>
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-xl hover:bg-green-500">Save Photo</button>
+      <p id="uploadStatus" class="text-sm text-center mt-2 hidden"></p>
+    </form>
+  </div>
+</div>
+
+<div id="passwordModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 modal-backdrop">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 relative">
+    <button id="closePasswordModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">✕</button>
+    <h2 class="text-lg font-semibold mb-4">Reset Password</h2>
+
+    <form id="passwordForm" class="space-y-4">
+      {% csrf_token %}
+
+      <input type="password" name="current_password" placeholder="Current Password" class="w-full border p-2 rounded-lg" required>
+      <input type="password" name="new_password" placeholder="New Password" class="w-full border p-2 rounded-lg" required>
+      <input type="password" name="confirm_password" placeholder="Confirm Password" class="w-full border p-2 rounded-lg" required>
+
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-500">
+        Update Password
+      </button>
+
+      <p id="passwordStatus" class="text-sm text-center mt-2 hidden"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Styles ===== -->
+<style>
+.modal-backdrop { backdrop-filter: blur(6px); }
+</style>
+
+<script>
+const id = document.getElementById("edit_id").value;
+/* ===== Modal Logic ===== */
+function toggleModal(id, show=true){
+  const el = document.getElementById(id);
+  el.classList.toggle('hidden', !show);
+  el.classList.toggle('flex', show);
+}
+window.addEventListener('keydown', e => {
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-backdrop').forEach(m=>toggleModal(m.id,false));
+  }
+});
+
+/* ===== Edit Profile AJAX ===== */
+const editForm = document.getElementById('editProfileForm');
+
+editForm?.addEventListener('submit', async function(e){
+  e.preventDefault();
+  const btn = this.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  const formData = new FormData(this);
+
+
+  try {
+    const res = await fetch(`/update-profile/${id}/`, {
+      method:"POST", body:formData, headers:{"X-CSRFToken": getCSRFToken()}
+    });
+    if(!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    if(data.status==="success"){
+      showSuccess("Profile updated!");
+    } else throw new Error(data.message || 'Update failed');
+  } catch(err){
+    showError(err.message);
+  } finally { btn.disabled = false; }
+});
+
+/* ===== Upload Photo AJAX ===== */
+const uploadForm = document.getElementById('uploadForm');
+const profileInput = document.getElementById('profilePic');
+const previewImg = document.getElementById('imagePreview');
+const statusText = document.getElementById('uploadStatus');
+
+profileInput?.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(file){
+    if(file.size>2e6){ alert('File too large!'); return; }
+    previewImg.src = URL.createObjectURL(file);
+  }
+});
+
+uploadForm?.addEventListener('submit', async function(e){
+  e.preventDefault();
+  const btn = this.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  const formData = new FormData(this);
+
+  try{
+    const res = await fetch(`/update-profile-photo/${id}/`, {method:'POST', body:formData, headers:{'X-CSRFToken': getCSRFToken()}});
+    if(!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    if(data.success){
+      showSuccess('Upload successful!');
+      previewImg.src = data.image_url+'?t='+new Date().getTime();
+      document.querySelectorAll('img').forEach(img=>{
+        if(img.src.includes('profile')||img.classList.contains('rounded-full')) img.src=data.image_url+'?t='+new Date().getTime();
+      });
+      setTimeout(()=>toggleModal('uploadModal',false),1000);
+    } else throw new Error(data.error);
+  } catch(err){
+    showError(err.message || 'Upload failed');
+  } finally { btn.disabled=false; }
+});
+
+/* ===== Modal Logic ===== */
+document.getElementById('changePasswordBtn').onclick = () => toggleModal('passwordModal', true);
+document.getElementById('closePasswordModal').onclick = () => toggleModal('passwordModal', false);
+
+/* ===== AJAX Password Reset ===== */
+const passwordForm = document.getElementById('passwordForm');
+const passwordStatus = document.getElementById('passwordStatus');
+
+passwordForm?.addEventListener('submit', async function(e){
+  e.preventDefault();
+  const btn = this.querySelector('button[type="submit"]');
+  btn.disabled = true;
+
+  const formData = new FormData(this);
+  const newPass = formData.get('new_password');
+  const confirmPass = formData.get('confirm_password');
+
+  // client-side confirm password check
+  if(newPass !== confirmPass){
+    passwordStatus.classList.remove('hidden');
+    passwordStatus.textContent = 'New password and confirm password do not match';
+    passwordStatus.className = 'text-sm text-red-600 text-center mt-2';
+    btn.disabled = false;
+    return;
+  }
+
+  try{
+    const res = await fetch('/reset-password/', {
+      method: 'POST',
+      body: formData,
+      headers: {'X-CSRFToken': getCSRFToken()}
+    });
+    if(!res.ok) throw new Error('Network error');
+    const data = await res.json();
+
+    if(data.success){
+      showSuccess('Password updated successfully!');
+      setTimeout(()=> toggleModal('passwordModal', false), 1200);
+      passwordForm.reset();
+    } else {
+      throw new Error(data.error || 'Update failed');
+    }
+  } catch(err){
+    showError(err.message);
+  } finally { btn.disabled = false; }
+});
+
+/* ===== Button Events ===== */
+document.getElementById('uploadPicBtn').onclick = ()=>toggleModal('uploadModal',true);
+document.getElementById('editProfileBtn').onclick = ()=>toggleModal('editProfileModal',true);
+document.getElementById('closeEditModal')?.addEventListener('click',()=>toggleModal('editProfileModal',false));
+document.getElementById('closeUploadModal')?.addEventListener('click',()=>toggleModal('uploadModal',false));
+</script>
+{% endblock %}

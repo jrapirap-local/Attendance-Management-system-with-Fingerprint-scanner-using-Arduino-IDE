@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Monitoring System</title>
+    {% load static %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logoams.png' %}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js for dropdowns -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>  
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#16a34a',  // green-600
+            secondary: '#f3f4f6', // gray-100
+          },
+        },
+      }
+    }
+
+    const Toast = Swal.mixin({
+        toast: true,              // enable toast mode
+        position: 'top-end',      // top-right corner
+        showConfirmButton: false, // no confirm button
+        timer: 2000,              // auto close after 2 seconds
+        timerProgressBar: true,   // show progress bar
+        background: '#48bb78',    // optional: green background
+        iconColor: 'white',       // icon color
+        customClass: {
+            popup: 'shadow-lg rounded-lg px-6 py-3 text-white'
+        }
+    });   
+  </script>
+</head>
+
+<body x-data="{ sidebarOpen: false }" class="bg-gray-100 min-h-screen font-sans text-gray-700"  data-page="{% block page %}{% endblock %}">
+<!-- Overlay (mobile only) -->
+  <div class="flex h-screen">
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-auto">
+      <!-- Page Content -->
+      <main class="p-6 flex-1">
+        {% block content %}
+        {% endblock %}
+      </main>
+    </div>
+
+  </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const currentPage = document.body.dataset.page;
+
+      document.querySelectorAll("[data-page]").forEach(link => {
+          if (link.dataset.page === currentPage) {
+
+              // highlight active link
+              link.classList.add("bg-gray-200", "text-green-900");
+
+              // find closest dropdown
+              const dropdown = link.closest('[x-data]');
+              if (dropdown) {
+                  // use Alpine's reactive scope safely
+                  const data = Alpine.$data(dropdown);
+                  if (data && typeof data.open !== "undefined") {
+                      data.open = true;
+                  }
+              }
+          }
+      });
+  });
+
+const input = document.getElementById("globalSearch");
+const resultsBox = document.getElementById("searchResults");
+
+input.addEventListener("input", function () {
+    const query = this.value;
+
+    if (query.length < 1) {
+        resultsBox.classList.add("hidden");
+        return;
+    }
+
+    fetch(`/search/?q=${query}`)
+        .then(res => res.json())
+        .then(data => {
+            resultsBox.innerHTML = "";
+
+            if (data.results.length === 0) {
+                resultsBox.innerHTML = `<div class="p-2 text-gray-500">No results</div>`;
+            } else {
+                data.results.forEach(item => {
+                    const div = document.createElement("a");
+                    div.href = item.url;
+                    div.className = "block px-4 py-2 hover:bg-gray-100";
+
+                    div.innerHTML = `
+                        <div class="text-sm font-medium">${item.title}</div>
+                        <div class="text-xs text-gray-500">${item.type}</div>
+                    `;
+
+                    resultsBox.appendChild(div);
+                });
+            }
+
+            resultsBox.classList.remove("hidden");
+        });
+});
+
+  // click outside → close
+  document.addEventListener("click", function (e) {
+      if (!input.contains(e.target) && !resultsBox.contains(e.target)) {
+          resultsBox.classList.add("hidden");
+      }
+  });  
+
+    function showSuccess(message) {
+        Swal.fire({
+            icon: "success",
+            title: "Success",
+            text: message,
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    function showError(message) {
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: message
+        });
+    }
+
+    // CSRF
+    function getCSRFToken() {
+        return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1];
+    }    
+</script>
+</body>
+</html>

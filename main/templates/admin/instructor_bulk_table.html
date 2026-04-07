@@ -1,0 +1,20 @@
+<table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-green-100">
+    <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">ID</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+    </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+        {% for item in inst %}
+        <tr data-url="{% url 'instructor-profile' item.id %}" class="clickable-row cursor-pointer">
+            <td class="px-6 py-4 whitespace-nowrap">{{ item.id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ item.last_name }}, {{ item.first_name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ item.email }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{% if item.is_active %}Active{% else %}Inactive{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

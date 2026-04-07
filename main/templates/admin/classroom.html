@@ -1,0 +1,634 @@
+{% extends 'builder.html' %}
+{% load static %}
+{% block page %}classroom{% endblock %}
+{% block content %}
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Class Management</h1>
+            <p class="text-sm text-gray-500">Manage classroom</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- LEFT PANEL -->
+        <div class="bg-white p-6 rounded-2xl shadow-md space-y-6">
+
+            <!-- DASHBOARD CARDS -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-4 rounded-xl shadow">
+                    <h2 class="text-gray-500 text-sm">Total Classrooms</h2>
+                    <p id="totalClassrooms" class="text-2xl font-bold">0</p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-xl shadow">
+                    <h2 class="text-gray-500 text-sm">Total Capacity</h2>
+                    <p id="totalCapacity" class="text-2xl font-bold">0</p>
+                </div>
+            </div>
+
+            <!-- CREATE CLASSROOM -->
+            <div>
+                <h2 class="text-xl font-bold mb-4">Create Classroom</h2>
+
+                <div class="grid grid-cols-2 gap-4 p-2">
+                    <input id="name" class="p-2 border rounded" placeholder="Room Name">
+                    <input id="room_code" class="p-2 border rounded" placeholder="Room Code">
+                    <select id="instructor" class="p-2 border rounded"></select>
+                    <input id="capacity" type="number" class="p-2 border rounded" placeholder="Capacity">
+                    
+                </div>
+                <div class="grid grid-cols-1 gap-4 p-2">
+                    <textarea id="description" class="p-2 border rounded" placeholder="Description"></textarea>
+                </div>
+                    
+                <button onclick="createClassroom()"
+                        class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Save Classroom
+                </button>
+
+                <p id="msg" class="text-sm mt-2"></p>
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="flex-1 bg-white p-6 rounded-xl shadow">
+
+            <h2 class="text-xl font-bold mb-4">Classroom List</h2>
+            <blockquote class="text-gray-500 italic mb-4">For more options, click Item below.</blockquote>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-green-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Capacity</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Instructor</th>
+                    </tr>
+                </thead>
+
+                <tbody id="classroomTable" class="bg-white divide-y divide-gray-200"></tbody>
+            </table>
+
+        </div>
+
+    </div>
+</main>
+
+<div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+
+  <!-- BACKDROP -->
+  <div class="absolute inset-0 bg-black/50"></div>
+
+  <!-- CENTER WRAPPER -->
+  <div class="relative flex items-center justify-center min-h-screen p-4">
+
+    <!-- MODAL CARD -->
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- HEADER -->
+      <div class="flex justify-between items-start p-6 border-b bg-gray-50">
+
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Classroom Profile</h2>
+          <p class="text-sm text-gray-500">Detailed classroom overview</p>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="openEditFromProfile()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Edit
+          </button>
+
+          <button onclick="deleteFromProfile()"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            Delete
+          </button>
+
+          <button onclick="closeProfile()"
+            class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+            ✕
+          </button>
+        </div>
+
+      </div>
+
+      <!-- BODY -->
+      <div class="p-6 space-y-6">
+
+        <!-- INFO GRID -->
+        <div class="grid grid-cols-2 gap-4">
+
+          <input type="hidden" id="profile_id">
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Class Name</p>
+            <p id="p_name" class="font-semibold text-gray-800"></p>
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Class Code</p>
+            <p id="p_code" class="font-semibold text-gray-800"></p>
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Capacity</p>
+            <p id="p_capacity" class="font-semibold text-gray-800"></p>
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Instructor</p>
+            <a id="p_instructor_link"
+              class="font-semibold text-blue-600 hover:underline cursor-pointer"
+              onclick="openInstructorProfile(this)"></a>
+          </div>
+
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div>
+          <p class="text-xs text-gray-500 mb-1">Description</p>
+          <p id="p_description" class="text-gray-700 bg-gray-50 p-3 rounded-lg"></p>
+        </div>
+
+        <!-- SCHEDULE -->
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-3">Schedule</h3>
+
+          <div class="overflow-x-auto border rounded-xl">
+            <table class="w-full text-sm">
+
+              <thead class="bg-gray-100 text-gray-700">
+                <tr>
+                  <th class="p-3 text-left">Day</th>
+                  <th class="p-3 text-left">Start</th>
+                  <th class="p-3 text-left">End</th>
+                  <th class="p-3 text-left">Subject</th>
+                  <th class="p-3 text-left">Instructor</th>
+                </tr>
+              </thead>
+
+              <tbody id="schedule_table" class="divide-y"></tbody>
+
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="editModal" class="fixed inset-0 z-50 hidden">
+
+  <!-- BACKDROP -->
+  <div class="absolute inset-0 bg-black/50"></div>
+
+  <!-- CENTER -->
+  <div class="relative flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- HEADER -->
+      <div class="flex justify-between items-start p-6 border-b bg-gray-50">
+
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Edit Classroom</h2>
+          <p class="text-sm text-gray-500">Update classroom details</p>
+        </div>
+
+        <button onclick="closeModal()"
+          class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+          ✕
+        </button>
+
+      </div>
+
+      <!-- BODY -->
+      <div class="p-6 space-y-6">
+
+        <input type="hidden" id="edit_id">
+
+        <!-- GRID -->
+        <div class="grid grid-cols-2 gap-4">
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Class Name</p>
+            <input id="edit_name"
+              class="w-full mt-1 font-semibold bg-transparent outline-none"
+              placeholder="Enter class name">
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Class Code</p>
+            <input id="edit_code"
+              class="w-full mt-1 font-semibold bg-transparent outline-none"
+              placeholder="Enter class code">
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Capacity</p>
+            <input id="edit_capacity" type="number"
+              class="w-full mt-1 font-semibold bg-transparent outline-none"
+              placeholder="Enter capacity">
+          </div>
+
+          <!-- INSTRUCTOR DROPDOWN -->
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Instructor</p>
+            <select id="edit_instructor"
+              class="w-full mt-1 font-semibold bg-transparent outline-none">
+              <option value="">Select Instructor</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="p-4 bg-gray-50 rounded-xl">
+          <p class="text-xs text-gray-500">Description</p>
+          <textarea id="edit_description"
+            class="w-full mt-1 bg-transparent outline-none resize-none"
+            rows="3"
+            placeholder="Enter description"></textarea>
+        </div>
+
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="flex justify-end gap-3 p-6 border-t bg-gray-50">
+
+        <button onclick="updateClassroom()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Save Changes
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+<script>
+    const instructorProfileBase = "{% url 'instructor-profile' 0 %}";
+    function openInstructorProfile() {
+        const id = document.getElementById("p_instructor_link").dataset.instructorId;
+
+        if (!id) return;
+
+        const url = instructorProfileBase.replace('/0/', `/${id}/`);
+        window.location.href = url;
+    } 
+
+    function loadInstructors() {
+        fetch("/api/instructors/")
+        .then(res => res.json())
+        .then(data => {
+            let select = document.getElementById("instructor");
+            console.log(data.instructors.length);
+            if(data.instructors.length == 0){
+                select.innerHTML += `
+                    <option value="">No faculty available</option>
+                `;                 
+            } else {
+                select.innerHTML = `<option value="">Select Instructor</option>`;
+                data.instructors.forEach(i => {
+                    select.innerHTML += `
+                        <option value="${i.id}">${i.name}</option>
+                    `;                             
+                });
+            }
+
+        })
+        .catch(err => {
+            console.error("ERROR:", err);
+
+            document.getElementById("instructor").innerHTML =
+                `<option value="">Error loading instructors</option>`;
+        });
+    }
+
+    async function loadInstructorsForEdit() {
+        await fetch("/api/instructors-edit/")
+        .then(res => res.json())
+        .then(data => {
+            let select = document.getElementById("edit_instructor");
+            select.innerHTML = `<option value="">Select Instructor</option>`;
+
+            data.instructors.forEach(i => {
+                select.innerHTML += `
+                    <option value="${i.id}">${i.name}</option>
+                `;                              
+            });
+        })
+        .catch(err => {
+            console.error("ERROR:", err);
+
+            document.getElementById("edit_instructor").innerHTML =
+                `<option value="">Error loading instructors</option>`;
+        });
+    }    
+
+    // LOAD CLASSROOMS
+    function loadClassrooms() {
+        fetch("/api/classrooms/")
+        .then(res => res.json())
+        .then(data => {
+
+            document.getElementById("totalClassrooms").innerText = data.classrooms.length;
+
+            let totalCap = data.classrooms.reduce((sum, c) => sum + (c.capacity || 0), 0);
+            document.getElementById("totalCapacity").innerText = totalCap;
+
+            let table = document.getElementById("classroomTable");
+
+            if (data.classrooms.length === 0) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center p-4 text-gray-500">
+                            No classrooms available
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            let rows = "";
+            data.classrooms.forEach(c => {
+                rows += `
+                <tr 
+                    class="border-t hover:bg-gray-100 cursor-pointer transition"
+                    onclick='openProfile(this)'
+                    data-id="${c.id}"
+                    data-name="${c.name}"
+                    data-code="${c.room_code}"
+                    data-capacity="${c.capacity}"
+                    data-instructor="${c.instructor || ''}"
+                    data-instructor_id="${c.instructor_id || ''}"
+                    data-description="${c.description || ''}"
+                >
+                    <td class="px-6 py-4">${c.name}</td>
+                    <td class="px-6 py-4">${c.capacity}</td>
+                    <td class="px-6 py-4">${c.instructor || '-'}</td>
+                </tr>
+                `;
+            });
+
+            table.innerHTML = rows;
+        })
+        .then(data => {
+            if (openId) {
+                // find the row with matching ID
+                console.log(openId);
+                const row = document.querySelector(`[data-id="${openId}"]`);
+
+                if (row) {
+                    openProfile(row);
+                } else {
+                    console.warn("Row not found for ID:", openId);
+                }
+            }
+            params = "";
+            openId = "";
+        });
+    }
+
+    // CREATE CLASSROOM
+    function createClassroom() {
+
+        let name = document.getElementById("name").value;
+        let code = document.getElementById("room_code").value;
+        let capacity = document.getElementById("capacity").value;
+        let description = document.getElementById("description").value;
+        let instructor = document.getElementById("instructor").value;
+
+        let msg = document.getElementById("msg");
+
+        // VALIDATION
+        if (!name || !code || !capacity) {
+            showError("Please fill all required fields.");
+            msg.className = "text-red-500 text-sm mt-2";
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append("name", name);
+        formData.append("room_code", code);
+        formData.append("capacity", capacity);
+        formData.append("description", description);
+        formData.append("instructor", instructor);
+
+        fetch("/classrooms/create/", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            if (data.status === "success") {
+                showSuccess(data.message);
+                loadClassrooms();
+                loadInstructors();
+                // CLEAR FORM
+                document.getElementById("name").value = "";
+                document.getElementById("room_code").value = "";
+                document.getElementById("capacity").value = "";
+                document.getElementById("description").value = "";
+            } else {
+                showError(data.message);
+            }
+        });
+    }
+
+function loadSchedule(classroomId) {
+    fetch(`/api/class-schedules/${classroomId}/`)
+        .then(res => res.json())
+        .then(data => {
+
+            let tbody = document.getElementById("schedule_table");
+            tbody.innerHTML = "";
+
+            const schedules = data.schedules || [];
+
+            if (schedules.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-4 text-center text-gray-500">
+                            No schedule available
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            schedules.forEach(s => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 text-left">
+
+                        <td class="p-3">${s.day}</td>
+                        <td class="p-3">${s.start}</td>
+                        <td class="p-3">${s.end}</td>
+                        <td class="p-3 font-medium text-gray-800">${s.subject}</td>
+                        <td class="p-3 text-gray-600">${s.instructor}</td>
+
+                    </tr>
+                `;
+            });
+        })
+        .catch(err => console.error("Failed to load schedules:", err));
+}
+
+    function openProfile(row) {
+        loadInstructorsForEdit()
+        document.getElementById("profileModal").classList.remove("hidden");
+
+        document.getElementById("profile_id").value = row.dataset.id;
+
+        document.getElementById("p_name").innerText = row.dataset.name;
+        document.getElementById("p_code").innerText = row.dataset.code;
+        document.getElementById("p_capacity").innerText = row.dataset.capacity;
+        document.getElementById("p_description").innerText = row.dataset.description || '-';
+
+        const instructor = row.dataset.instructor || '-';
+        const instructorId = row.dataset.instructor_id || "";
+
+        const link = document.getElementById("p_instructor_link");
+        link.innerText = instructor;
+        link.dataset.instructorId = instructorId;
+
+        loadSchedule(row.dataset.id);
+    }
+
+    function closeProfile() {
+        document.getElementById("profileModal").classList.add("hidden");
+    }
+
+    // OPEN MODAL
+    async function openEditFromProfile() {
+        const id = document.getElementById("profile_id").value;
+
+        document.getElementById("edit_id").value = id;
+        document.getElementById("edit_name").value = document.getElementById("p_name").innerText;
+        document.getElementById("edit_code").value = document.getElementById("p_code").innerText;
+        document.getElementById("edit_capacity").value = document.getElementById("p_capacity").innerText;
+        document.getElementById("edit_description").value = document.getElementById("p_description").innerText;
+
+        const instructorSelect = document.getElementById("edit_instructor");
+
+        // match selected instructor
+        const currentInstructor = document.getElementById("p_instructor_link").innerText;
+
+        for (let option of instructorSelect.options) {
+            if (option.text === currentInstructor) {
+                option.selected = true;
+                break;
+            }
+        }
+
+        closeProfile();
+        document.getElementById("editModal").classList.remove("hidden");
+    }
+
+    function openEditFromRowFromObject(c) {
+        document.getElementById("editModal").classList.remove("hidden");
+
+        document.getElementById("edit_id").value = c.id;
+        document.getElementById("edit_name").value = c.name;
+        document.getElementById("edit_code").value = c.room_code;
+        document.getElementById("edit_capacity").value = c.capacity;
+        document.getElementById("edit_instructor").value = c.instructor || "";
+        document.getElementById("edit_description").value = c.description || "";
+    }
+
+    // CLOSE MODAL
+    function closeModal() {
+        document.getElementById("editModal").classList.add("hidden");
+    }
+
+    // UPDATE
+    function updateClassroom() {
+        let id = document.getElementById("edit_id").value;
+
+        let formData = new FormData();
+        formData.append("name", document.getElementById("edit_name").value);
+        formData.append("room_code", document.getElementById("edit_code").value);
+        formData.append("capacity", document.getElementById("edit_capacity").value);
+        formData.append("instructor", document.getElementById("edit_instructor").value);
+        formData.append("description", document.getElementById("edit_description").value);
+
+        fetch(`/classrooms/update/${id}/`, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                showSuccess(data.message);
+                closeModal();
+                loadClassrooms();
+                loadInstructors();
+            } else {
+                showError(data.message);
+            }
+        });
+    }
+
+
+    // DELETE
+    function deleteFromProfile() {
+
+        let id = document.getElementById("profile_id").value;
+
+        Swal.fire({
+            title: "Delete classroom?",
+            text: "This cannot be undone",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                fetch(`/classrooms/delete/${id}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCSRFToken()
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        showSuccess(data.message);
+                        closeProfile();
+                        loadClassrooms();
+                        loadInstructors();
+                    } else {
+                        showError(data.message);
+                    }
+                });
+            }
+        });
+    }
+
+
+    // INIT
+    loadClassrooms();
+    loadInstructors();
+    setInterval(loadClassrooms, 5000); 
+
+    document.addEventListener("DOMContentLoaded", function () {
+        params = new URLSearchParams(window.location.search);
+        openId = params.get("open");
+    });    
+</script>
+
+{% endblock %}

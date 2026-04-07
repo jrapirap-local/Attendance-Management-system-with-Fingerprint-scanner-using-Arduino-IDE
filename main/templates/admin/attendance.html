@@ -2,109 +2,115 @@
 {% load static %}
 
 {% block content %}
-<div class="container">
+<div class="flex min-h-screen bg-gray-50">
+
   {% include 'admin/sidebar.html' %}
-  <div id="dashboard">
-    <h1>Instructor Attendance</h1>
-    <hr/>
-    <!-- 🔍 Search Bar -->
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search...">
+
+  <div id="dashboard" class="flex-1 p-6">
+
+    <!-- Title -->
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Instructor Attendance — Today</h1>
+
+    <!-- Search Bar -->
+    <div class="mb-6 flex justify-end">
+      <input type="text" id="searchInput" placeholder="Search instructor..." 
+             class="w-full md:w-1/3 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 shadow-sm"/>
     </div>
 
-    <!-- 📝 Table and No Results Message -->
-    <div id="table-container">
-      <table id="attendanceTable">
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Username</th>
-            <th>Date</th>
-            <th>Time In</th>
-            <th>Time Out</th>
-     
-          </tr>
-        </thead>
-        <tbody>
-          {% regroup At by date as date_list %}
-          {% for date_group in date_list %}
-            <!-- 📅 Date Separator -->
-            <tr class="date-separator">
-              <td colspan="6" style="background-color: #dff8d7; text-align:center; font-weight:bold;">
-                {{ date_group.grouper }}
-              </td>
-            </tr>
-        
-            {% for item in date_group.list %}
-            <tr>
-              <td>{{ item.IdNum }}</td>
-              <td>{{ item.first_name }} {{ item.last_name }}</td>
-              <td>{{ item.date }}</td>
-              <td>
-                {{ item.time_in }}
-                <span class="badge 
-                  {% if item.time_in_status == 'In' %}badge-success
-                  {% elif item.time_in_status == 'Late' %}badge-warning
-                  {% elif item.time_in_status == 'N/A' %}badge-muted
-                  {% endif %}">
-                  
-                  {% if item.time_in_status == 'In' %}
-                    ✅ {{ item.time_in_status }}
-                  {% elif item.time_in_status == 'Late' %}
-                    ⚠️ {{ item.time_in_status }}
-                  {% elif item.time_in_status == 'N/A' %}
-                    ❔ {{ item.time_in_status }}
-                  {% endif %}
-                </span>
-              </td>
-              <td>
-                {{ item.time_out }}
-                <span class="badge 
-                  {% if item.time_out_status == 'Out' %}badge-success
-                  {% elif item.time_out_status == 'Undertime' %}badge-danger
-                  {% elif item.time_out_status == 'N/A' %}badge-muted
-                  {% endif %}">
-                  
-                  {% if item.time_out_status == 'Out' %}
-                    ✅ {{ item.time_out_status }}
-                  {% elif item.time_out_status == 'Undertime' %}
-                    ❌ {{ item.time_out_status }}
-                  {% elif item.time_out_status == 'N/A' %}
-                    ❔ {{ item.time_out_status }}
-                  {% endif %}
-                </span>
-              </td>
-              
-            </tr>
-            {% endfor %}
-          {% endfor %}
-        </tbody>
-        
-      </table>
+<!-- Instructor Current Day Attendance Table -->
+<div class="mt-6 bg-white rounded-2xl shadow-lg p-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Today's Attendance</h2>
 
-      <!-- Message if no match -->
-      <p id="noResults" style="display: none; text-align: center; margin-top: 20px; color: gray;">No results found.</p>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">ID</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Username</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Date</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Time In</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Time Out</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% regroup At by date as date_list %}
+                {% for date_group in date_list %}
+                <!-- Date separator -->
+                <tr class="bg-green-50">
+                    <td colspan="5" class="text-center py-2 font-semibold text-green-800">{{ date_group.grouper }}</td>
+                </tr>
+
+                {% for item in date_group.list %}
+                <tr class="hover:bg-green-50 transition">
+                    <td class="px-4 py-2 text-gray-700">{{ item.IdNum }}</td>
+                    <td class="px-4 py-2 text-gray-700">{{ item.first_name }} {{ item.last_name }}</td>
+                    <td class="px-4 py-2 text-gray-700">{{ item.date }}</td>
+                    <td class="px-4 py-2">
+                        <span>{{ item.time_in }}</span>
+                        {% if item.time_in_status == 'In' %}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-green-800 bg-green-100 text-xs font-medium">✅ In</span>
+                        {% elif item.time_in_status == 'Late' %}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-yellow-800 bg-yellow-100 text-xs font-medium">⚠️ Late</span>
+                        {% elif item.time_in_status == 'N/A' %}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-gray-500 bg-gray-100 text-xs font-medium">❔ N/A</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-2">
+                        <span>{{ item.time_out }}</span>
+                        {% if item.time_out_status == 'Out' %}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-green-800 bg-green-100 text-xs font-medium">✅ Out</span>
+                        {% elif item.time_out_status == 'Undertime' %}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-red-800 bg-red-100 text-xs font-medium">❌ Undertime</span>
+                        {% elif item.time_out_status == 'N/A' %}
+                            <span class="inline-block px-2 py-0.5 rounded-full text-gray-500 bg-gray-100 text-xs font-medium">❔ N/A</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
+
+<!-- Weekly Schedule Table -->
+<div class="mt-12 bg-white rounded-2xl shadow-lg p-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Weekly Schedule</h2>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Day</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Subject</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Section</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Time</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-500">Room</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for schedule in weekly_schedule %}
+                <tr class="hover:bg-green-50 transition">
+                    <td class="px-4 py-2 text-gray-700">{{ schedule.day }}</td>
+                    <td class="px-4 py-2 text-gray-700">{{ schedule.subject }}</td>
+                    <td class="px-4 py-2 text-gray-700">{{ schedule.section }}</td>
+                    <td class="px-4 py-2 text-gray-700">{{ schedule.time }}</td>
+                    <td class="px-4 py-2 text-gray-700">{{ schedule.room }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-4 py-2 text-center text-gray-400">No schedules available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <!-- No Results Message -->
+    <p id="noResults" class="hidden mt-4 text-center text-gray-500">No results found.</p>
   </div>
 </div>
 
-<script>
 
-function togglePasswordVisibility(fieldId, checkbox) {
-  const field = document.getElementById(fieldId);
-  field.type = checkbox.checked ? 'text' : 'password';
-}
-
-function detectCapsLock(fieldId, warningId) {
-  const field = document.getElementById(fieldId);
-  const warning = document.getElementById(warningId);
-  if(!field || !warning) return;
-  field.addEventListener('keydown', function(e){
-    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
-  });
-  field.addEventListener('keyup', function(e){
-    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
-  });
-}
-</script>
 {% endblock %}

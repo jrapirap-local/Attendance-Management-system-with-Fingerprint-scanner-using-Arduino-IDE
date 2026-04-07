@@ -1,0 +1,785 @@
+{% extends 'builder-user.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.input {
+  @apply w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500;
+}
+
+.tab-btn {
+  @apply px-4 py-2 text-sm rounded-lg whitespace-nowrap bg-gray-100;
+}
+
+.tab-btn.active {
+  @apply bg-green-600 text-white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}    
+</style>
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+
+            <!-- Header with overlay -->
+            <div class="relative h-44">
+                <img src="{% static 'image/header.jpg' %}" 
+                    class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                <!-- Profile Image -->
+                <img src="{% if instructor.profile_pic %}{{ instructor.profile_pic.url  }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                    class="absolute -bottom-12 left-6 h-48 w-48 rounded-full border-8 border-white shadow-lg object-cover">
+            </div>
+
+            <!-- Info Grid -->
+            <div class="grid md:grid-cols-2 gap-6 pt-12 px-6 pb-6">
+
+                <!-- Personal Info -->
+                <div>
+                    <!-- Name + Badge -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                {{ instructor.first_name }} {{ instructor.last_name }}
+                            </h2>
+                            <p class="text-sm text-gray-500">
+                                <a href="{{ instructor.email }}" class="link text-blue-500 hover:underline transition">@{{ instructor.username }}</a>
+                            </p>
+                        </div>
+                        <input type="text" id="instructor_id" name="instructor_id" value="{{ instructor.id }}" hidden>
+                        {% if instructor.is_active %}
+                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                            Active
+                        </span>
+                        {% else %}
+                        <span class="bg-red-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                            Inactive
+                        </span>
+                        {% endif %}
+                        <button id="openEditProfileBtn" 
+                                class="text-blue-600 hover:underline transition">
+                            Edit
+                        </button>                        
+                    </div>
+
+                    <!-- Personal Details -->
+                    <div class="grid grid-cols-1 gap-3 mt-6 text-sm">
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">ID</span>
+                            <span class="font-semibold" id="ins_id">{{ instructor.instructor_id }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Birthday</span>
+                            <span class="font-semibold">{{ instructor.birthday|date:"F j, Y" }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Age</span>
+                            <span class="font-semibold">{{ instructor.age }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Gender</span>
+                            <span class="font-semibold">{{ instructor.gender }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Phone</span>
+                            <span class="font-semibold">{{ instructor.contact_info|default:"-" }}</span>
+                        </div>                        
+
+                    </div>                  
+                </div>
+
+                <!-- Academic Info -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Academic Information</h3>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Bachelor's Degree</span>
+                        <span class="font-semibold">{{ instructor.bs_degree }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Masters Degree</span>
+                        <span class="font-semibold">{{ instructor.masters_degree }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Doctorate Degree</span>
+                        <span class="font-semibold">{{ instructor.doctorate_degree }}</span>
+                    </div>
+                </div>  
+                <!-- Organization Info -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Organization Details</h3>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Academic Rank</span>
+                        <span class="font-semibold">{{ instructor.academic_rank }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Designation</span>
+                        <span class="font-semibold">{{ instructor.designation }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Date of Employment</span>
+                        <span class="font-semibold">{{ instructor.date_of_employment }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Employment Status</span>
+                        <span class="font-semibold">{{ instructor.employment_status }}</span>
+                    </div>
+                </div>
+
+                <!-- Biometric Section -->
+                <div>
+
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Fingerprint Details</h3>
+
+                    <!-- Fingerprint Status -->
+                    <div class="flex gap-10 mt-4 md:mt-0 items-center">
+
+                        {% comment %} Main Fingerprint {% endcomment %}
+                        <div onclick="asl_assistance()" id="instructor-{{ instructor.id }}-fp" class="flex flex-col items-center hover:scale-105 transition cursor-pointer">
+                            <p class="text-sm text-gray-500 mb-2">Main</p>
+                            <div class="relative w-24 h-48 border-2 rounded-2xl overflow-hidden 
+                                        {% if fp and fp.main_id %}border-green-500{% else %}border-gray-300{% endif %}">
+                                {% if fp and fp.main_id %}
+                                <img src="{% static 'image/fgreen.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% else %}
+                                <img src="{% static 'image/fblack.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% endif %}
+                            </div>
+                            <span class="mt-2 text-sm font-medium 
+                                        {% if fp and fp.main_id %}text-green-600{% else %}text-gray-500{% endif %}">
+                                {% if fp and fp.main_id %}Registered{% else %}Not Registered{% endif %}
+                            </span>
+                        </div>
+
+                        {% comment %} Backup Fingerprint {% endcomment %}
+                        <div onclick="asl_assistance()" id="instructor-{{ instructor.id }}-fp" class="flex flex-col items-center hover:scale-105 transition cursor-pointer">
+                            <p class="text-sm text-gray-500 mb-2">Backup</p>
+                            <div class="relative w-24 h-48 border-2 rounded-2xl overflow-hidden 
+                                        {% if fp and fp.backup_id %}border-green-500{% else %}border-gray-300{% endif %}">
+                                {% if fp and fp.backup_id %}
+                                <img src="{% static 'image/fgreen.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% else %}
+                                <img src="{% static 'image/fblack.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% endif %}
+                            </div>
+                            <span class="mt-2 text-sm font-medium 
+                                        {% if fp and fp.backup_id %}text-green-600{% else %}text-gray-500{% endif %}">
+                                {% if fp and fp.backup_id %}Registered{% else %}Not Registered{% endif %}
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="max-w-screen mx-auto px-6">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mt-6 max-w-full">
+
+            <h2 class="text-lg font-semibold mb-4 text-gray-800">
+                Change Password
+            </h2>
+
+            <form id="passwordForm" class="space-y-4">
+                {% csrf_token %}
+
+                <div>
+                    <label class="text-sm text-gray-500">Current Password</label>
+                    <input type="password" name="current_password"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-500">New Password</label>
+                    <input type="password" name="new_password"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-500">Confirm Password</label>
+                    <input type="password" name="confirm_password"
+                        class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div class="flex max-w-screen justify-right pt-2">
+                    <!-- Update Password -->
+                    <button type="submit"
+                        class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Update Password
+                    </button>
+                    <!-- Reset via Email -->
+                    <!-- <button type="button" id="resetPasswordEmail"
+                        class="px-4 py-2 text-sm text-yellow-500 rounded-lg hover:underline transition">
+                        Reset via Email
+                    </button>                          -->
+                </div>
+            </form>
+
+        </div>
+    </div>
+</main>
+<div id="overlayLoader" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="flex flex-col items-center gap-2">
+        <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span class="text-white text-lg">Please wait...</span>
+    </div>
+</div>
+<!-- Edit Profile Modal -->
+<div id="editProfileModal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+
+  <div class="bg-white w-full h-full md:h-auto md:max-w-4xl rounded-none md:rounded-2xl shadow-xl flex flex-col max-h-[100vh] md:max-h-[90vh]">
+
+    <!-- HEADER -->
+    <div class="flex justify-between items-center p-4 border-b">
+      <h2 class="text-lg font-bold">Edit Profile</h2>
+      <button id="closeEditModalBtn" class="text-2xl text-gray-500">&times;</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="border-b overflow-x-auto">
+        <div class="flex gap-2 px-4 py-2 min-w-max">
+
+            <button data-tab="personal"
+            class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+                    bg-gray-100 text-gray-700 hover:bg-gray-200
+                    transition">
+            Personal Information
+            </button>
+
+            <button data-tab="employment"
+            class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+                    bg-gray-100 text-gray-700 hover:bg-gray-200
+                    transition">
+            Employment Details
+            </button>
+
+            <button data-tab="education"
+            class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+                    bg-gray-100 text-gray-700 hover:bg-gray-200
+                    transition">
+            Education Background
+            </button>
+
+            <button data-tab="contact"
+            class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+                    bg-gray-100 text-gray-700 hover:bg-gray-200
+                    transition">
+            Contact Information
+            </button>
+
+            <button data-tab="profile"
+            class="tab-btn px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap
+                    bg-gray-100 text-gray-700 hover:bg-gray-200
+                    transition">
+            Profile Photo
+            </button>
+
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <form id="editProfileForm" class="space-y-4 text-gray-700">
+        {% csrf_token %}
+        <input type="hidden" name="id" value="{{ instructor.id }}">
+
+        <!-- PERSONAL -->
+        <div class="tab-content active" id="personal">
+            <div>
+                <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Personal Information</h2> -->
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">First Name</label>
+                        <input type="text" name="first_name" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                            value="{{ instructor.first_name }}">
+                    </div>
+                    <span class="hidden" id="id">{{ instructor.id }}</span>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Middle Name</label>
+                        <input type="text" name="middle_name"
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                            value="{{ instructor.middle_name }}">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Last Name</label>
+                        <input type="text" name="last_name" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                            value="{{ instructor.last_name }}">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Birthday</label>
+                        <input type="date" name="birthday" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                            value="{{ instructor.birthday|date:'Y-m-d' }}">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Gender</label>
+                        <select name="gender" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500">
+                            <option disabled {% if not instructor.gender %}selected{% endif %}>Select Gender</option>
+                            <option value="Male" {% if instructor.gender == 'Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if instructor.gender == 'Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if instructor.gender == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMPLOYMENT -->
+        <div class="tab-content hidden" id="employment">
+            <div>
+                <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Employment Details</h2> -->
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Instructor ID</label>
+                        <input type="text" name="instructor_id"
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300"
+                            value="{{ instructor.instructor_id }}">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Employment Status</label>
+                        <select name="employment_status" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300">
+                            <option disabled {% if not instructor.employment_status %}selected{% endif %}>Select Status</option>
+                            <option value="Permanent" {% if instructor.employment_status == 'Permanent' %}selected{% endif %}>Permanent</option>
+                            <option value="Temporary" {% if instructor.employment_status == 'Temporary' %}selected{% endif %}>Temporary</option>
+                            <option value="Contract of Service" {% if instructor.employment_status == 'Contract of Service' %}selected{% endif %}>Contract of Service</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Designation</label>
+                        <select name="designation" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300">
+                            <option disabled {% if not instructor.designation %}selected{% endif %}>Select Designation</option>
+                            <option value="Department Chair" {% if instructor.designation == 'Department Chair' %}selected{% endif %}>Department Chair</option>
+                            <option value="Department Secretary" {% if instructor.designation == 'Department Secretary' %}selected{% endif %}>Department Secretary</option>
+                            <option value="IT Program Coordinator" {% if instructor.designation == 'IT Program Coordinator' %}selected{% endif %}>IT Program Coordinator</option>
+                            <option value="CS Program Coordinator" {% if instructor.designation == 'CS Program Coordinator' %}selected{% endif %}>CS Program Coordinator</option>
+                            <option value="Department Extension Coordinator" {% if instructor.designation == 'Department Extension Coordinator' %}selected{% endif %}>Department Extension Coordinator</option>
+                            <option value="Department Research Coordinator" {% if instructor.designation == 'Department Research Coordinator' %}selected{% endif %}>Department Research Coordinator</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Academic Rank</label>
+                        <select name="academic_rank" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300">
+                            <option disabled {% if not instructor.academic_rank %}selected{% endif %}>Select Rank</option>
+                                <option disabled {% if not instructor.academic_rank %}selected{% endif %}>Academic Rank</option>
+                                <option value="Instructor 1" {% if instructor.academic_rank == 'Instructor 1' %}selected{% endif %}>Instructor 1</option>
+                                <option value="Instructor 2" {% if instructor.academic_rank == 'Instructor 2' %}selected{% endif %}>Instructor 2</option>
+                                <option value="Instructor 3" {% if instructor.academic_rank == 'Instructor 3' %}selected{% endif %}>Instructor 3</option>
+                                <option value="Assistant Professor 1" {% if instructor.academic_rank == 'Assistant Professor 1' %}selected{% endif %}>Assistant Professor 1</option>
+                                <option value="Assistant Professor 2" {% if instructor.academic_rank == 'Assistant Professor 2' %}selected{% endif %}>Assistant Professor 2</option>
+                                <option value="Assistant Professor 3" {% if instructor.academic_rank == 'Assistant Professor 3' %}selected{% endif %}>Assistant Professor 3</option>
+                                <option value="Assistant Professor 4" {% if instructor.academic_rank == 'Assistant Professor 4' %}selected{% endif %}>Assistant Professor 4</option>
+                                <option value="Professor 1" {% if instructor.academic_rank == 'Professor 1' %}selected{% endif %}>Professor 1</option>
+                                <option value="Professor 2" {% if instructor.academic_rank == 'Professor 2' %}selected{% endif %}>Professor 2</option>
+                                <option value="Professor 3" {% if instructor.academic_rank == 'Professor 3' %}selected{% endif %}>Professor 3</option>
+                                <option value="Professor 4" {% if instructor.academic_rank == 'Professor 4' %}selected{% endif %}>Professor 4</option>
+                                <option value="Professor 5" {% if instructor.academic_rank == 'Professor 5' %}selected{% endif %}>Professor 5</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Workloads</label>
+                        <input type="number" name="workloads" min="0" placeholder="Number of Workloads" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.workloads }}"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Employment Date</label>
+                        <input type="date" name="date_of_employment" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.date_of_employment|date:'Y-m-d' }}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDUCATION -->
+        <div class="tab-content hidden" id="education">
+            <div>
+                <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Educational Background</h2> -->
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Bachelor's Degree</label>
+                        <input type="text" name="bs_degree" placeholder="BS Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.bs_degree }}"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Master's Degree</label>
+                        <input type="text" name="masters_degree" placeholder="Master’s Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.masters_degree }}"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Doctorate's Degree</label>
+                        <input type="text" name="doctorate_degree" placeholder="Doctorate Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.doctorate_degree }}"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Eligibility</label>
+                        <input type="text" name="eligibility_type" placeholder="Eligibility Type" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.eligibility_type }}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTACT -->
+        <div class="tab-content hidden" id="contact">
+            <div>
+                <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Contact Information</h2> -->
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Email Address</label>
+                        <input type="email" name="email" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300"
+                            value="{{ instructor.email }}">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600">Contact Number</label>
+                        <input type="tel" name="contact_info" required
+                            class="mt-1 p-2 w-full rounded-lg border border-gray-300"
+                            value="{{ instructor.contact_info }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="tab-content hidden" id="profile">
+            <div>
+                <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Profile Picture</h2> -->
+
+                <!-- PREVIEW -->
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+
+                    <!-- Image Preview -->
+                    <img id="imagePreview"
+                        src="{% if instructor.profile_pic %}{{ instructor.profile_pic.url  }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                        alt="Preview"
+                        class="w-32 h-44 sm:w-36 sm:h-52 object-cover rounded-lg border shadow">
+
+                    <!-- Upload -->
+                    <div class="flex flex-col gap-2">
+                    <label for="fileUpload"
+                            class="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-lg text-center hover:bg-green-500 transition">
+                        Choose Image
+                    </label>
+
+                    <span id="fileName" class="text-sm text-gray-500">
+                        No file chosen
+                    </span>
+                    </div>
+                </div>
+
+                <input type="file"
+                        id="fileUpload"
+                        name="fileUpload"
+                        accept="image/*"
+                        class="hidden">
+            </div>
+        </div>
+
+        <!-- SAVE -->
+        <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg">
+          Save Changes
+        </button>
+
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+    const fileInput = document.getElementById("fileUpload");
+    const preview = document.getElementById("imagePreview");
+    const fileName = document.getElementById("fileName");
+
+    function asl_assistance(){
+      Swal.fire({
+          icon: "info",
+          title: "Admin access required",
+          text: "Please seek your Administrator's Assistance",
+          timer: 2000,
+          showConfirmButton: false
+      });        
+    }
+
+    fileInput.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (file) {
+            // Show file name
+            fileName.textContent = file.name;
+
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function (e) {
+            preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            fileName.textContent = "No file chosen";
+        }
+    });
+
+    const tabs = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        // RESET ALL TABS
+        tabs.forEach(b => {
+        b.classList.remove("bg-green-600", "text-white", "shadow");
+        b.classList.add("bg-gray-100", "text-gray-700");
+        });
+
+        // HIDE CONTENTS
+        contents.forEach(c => c.classList.add("hidden"));
+
+        // ACTIVATE CLICKED TAB
+        btn.classList.remove("bg-gray-100", "text-gray-700");
+        btn.classList.add("bg-green-600", "text-white", "shadow");
+
+        document.getElementById(btn.dataset.tab).classList.remove("hidden");
+    });
+    });
+
+    // DEFAULT ACTIVE TAB
+    tabs[0].click();
+
+
+    document.getElementById("fileUpload").addEventListener("change", function () {
+        const fileName = this.files[0]?.name || "No file chosen";
+        document.getElementById("fileName").textContent = fileName;
+    });
+
+    // TAB SWITCHING
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(c => {
+            c.classList.remove("active");
+            c.classList.add("hidden");
+            });
+
+            btn.classList.add("active");
+
+            const tab = document.getElementById(btn.dataset.tab);
+            tab.classList.remove("hidden");
+            tab.classList.add("active");
+        });
+    });
+
+
+const editModal = document.getElementById("editProfileModal");
+const openEditBtn = document.getElementById("openEditProfileBtn"); // add a button somewhere to trigger modal
+const closeEditBtn = document.getElementById("closeEditModalBtn");
+
+const editForm = document.getElementById("editProfileForm");
+
+const passwordForm = document.getElementById("passwordForm");
+const passwordMessage = document.getElementById("passwordMessage");
+
+const fphone = document.getElementById("contact_info");
+fphone?.addEventListener("blur", function () {
+  if (this.value.startsWith("09") && this.value.length === 11) {
+    this.value = "+63" + this.value.substring(1);
+  }
+});
+
+// Open modal
+if(openEditBtn){
+    openEditBtn.addEventListener("click", () => {
+        editModal.classList.remove("hidden");
+    });
+}
+
+// Close modal
+closeEditBtn.addEventListener("click", () => {
+    editModal.classList.add("hidden");
+});
+
+// IMAGE PREVIEW
+fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+    }
+});
+
+// AJAX submit
+editForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(editForm);
+    const id = formData.get("id");
+
+    try {
+        const res = await fetch("{% url 'update_my_profile' %}", {
+        method: "POST",
+        body: formData,
+        headers: { "X-CSRFToken": formData.get("csrfmiddlewaretoken") }
+        });
+
+        const data = await res.json();
+
+        if(data.success){
+        Swal.fire({
+            icon: "success",
+            title: "Updated!",
+            text: "Profile has been updated.",
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+        setTimeout(() => {
+            window.location.reload(); // auto-refresh page
+        }, 2000);
+
+        } else {
+            showError(data.message || "Failed to update profile.");
+        }
+
+    } catch (err) {
+        showError(err.toString());
+    }
+});  
+
+const overlay = document.getElementById("overlayLoader");
+
+passwordForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(passwordForm);
+
+    const currentPassword = formData.get("current_password").trim();
+    const newPassword = formData.get("new_password").trim();
+    const confirmPassword = formData.get("confirm_password").trim();
+
+    // Basic validation
+    if (!currentPassword) {
+        showError("Please provide your current password.");
+        return;
+    }
+    if (!newPassword || !confirmPassword) {
+        showError("Please fill in all fields.");
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        showError("New password and confirm password do not match.");
+        return;
+    }
+    if (newPassword.length < 6) {
+        showError("New password must be at least 6 characters long.");
+        return;
+    }
+
+    // Show overlay loader
+    overlay.classList.remove("hidden");
+    overlay.classList.add("flex");
+
+    fetch("{% url 'change_my_password' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCSRFToken()
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        overlay.classList.add("hidden");
+        overlay.classList.remove("flex");
+
+        if (data.success) {
+            showSuccess("Password updated successfully");
+            passwordForm.reset();
+        } else {
+            showError(data.error);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        overlay.classList.add("hidden");
+        overlay.classList.remove("flex");
+        showError("Something went wrong");
+    });
+});
+// Reset via Email using SweetAlert2
+// document.getElementById("resetPasswordEmail").addEventListener("click", () => {
+//     Swal.fire({
+//         title: 'Send Password Reset?',
+//         text: "A password reset email will be sent to your account.",
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonColor: '#3085d6',
+//         cancelButtonColor: '#d33',
+//         confirmButtonText: 'Yes, send it!',
+//         cancelButtonText: 'Cancel'
+//     }).then((result) => {
+//         if (result.isConfirmed) {
+//             fetch("{% url 'send_password_reset_email' %}", {
+//                 method: "POST",
+//                 headers: {
+//                     "X-CSRFToken": getCSRFToken(),
+//                     "Content-Type": "application/json"
+//                 },
+//                 body: JSON.stringify({ email: "{{ instructor.email }}" })
+//             })
+//             .then(res => res.json())
+//             .then(data => {
+//                 if (data.success) {
+//                     showSuccess('Password reset email has been sent.');
+//                 } else {
+//                     showError(data.error || 'Failed to send reset email.');
+//                 }
+//             })
+//             .catch(err => {
+//                 console.error(err);
+//                 showError('Something went wrong.');
+//             });
+//         }
+//     });
+// });
+</script>
+{% endblock %}

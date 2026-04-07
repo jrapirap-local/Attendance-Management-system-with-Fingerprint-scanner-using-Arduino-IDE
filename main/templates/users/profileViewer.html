@@ -1,0 +1,358 @@
+{% extends 'builder-user.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.input {
+  @apply w-full p-2 border rounded-lg focus:ring-2 focus:ring-green-500;
+}
+
+.tab-btn {
+  @apply px-4 py-2 text-sm rounded-lg whitespace-nowrap bg-gray-100;
+}
+
+.tab-btn.active {
+  @apply bg-green-600 text-white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}    
+</style>
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+
+            <!-- Header with overlay -->
+            <div class="relative h-44">
+                <img src="{% static 'image/header.jpg' %}" 
+                    class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                <!-- Profile Image -->
+                <img src="{% if instructor.profile_pic %}{{ instructor.profile_pic.url  }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                    class="absolute -bottom-12 left-6 h-48 w-48 rounded-full border-8 border-white shadow-lg object-cover">
+            </div>
+
+            <!-- Info Grid -->
+            <div class="grid md:grid-cols-2 gap-6 pt-12 px-6 pb-6">
+
+                <!-- Personal Info -->
+                <div>
+                    <!-- Name + Badge -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                {{ instructor.first_name }} {{ instructor.last_name }}
+                            </h2>
+                            <p class="text-sm text-gray-500">
+                                <a href="{{ instructor.email }}" class="link text-blue-500 hover:underline transition">@{{ instructor.username }}</a>
+                            </p>
+                        </div>
+                        <input type="text" id="instructor_id" name="instructor_id" value="{{ instructor.id }}">
+                        {% if instructor.is_active %}
+                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                            Active
+                        </span>
+                        {% else %}
+                        <span class="bg-red-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                            Inactive
+                        </span>
+                        {% endif %}                      
+                    </div>
+
+                    <!-- Personal Details -->
+                    <div class="grid grid-cols-1 gap-3 mt-6 text-sm">
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">ID</span>
+                            <span class="font-semibold" id="ins_id">{{ instructor.instructor_id }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Birthday</span>
+                            <span class="font-semibold">{{ instructor.birthday|date:"F j, Y" }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Age</span>
+                            <span class="font-semibold">{{ instructor.age }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Gender</span>
+                            <span class="font-semibold">{{ instructor.gender }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Phone</span>
+                            <span class="font-semibold">{{ instructor.contact_info|default:"-" }}</span>
+                        </div>                        
+
+                    </div>                  
+                </div>
+
+                <!-- Academic Info -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Academic Information</h3>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Bachelor's Degree</span>
+                        <span class="font-semibold">{{ instructor.bs_degree }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Masters Degree</span>
+                        <span class="font-semibold">{{ instructor.masters_degree }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Doctorate Degree</span>
+                        <span class="font-semibold">{{ instructor.doctorate_degree }}</span>
+                    </div>
+                </div>  
+                <!-- Organization Info -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Organization Details</h3>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Academic Rank</span>
+                        <span class="font-semibold">{{ instructor.academic_rank }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Designation</span>
+                        <span class="font-semibold">{{ instructor.designation }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Date of Employment</span>
+                        <span class="font-semibold">{{ instructor.date_of_employment }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Employment Status</span>
+                        <span class="font-semibold">{{ instructor.employment_status }}</span>
+                    </div>
+                </div>
+
+                <!-- Biometric Section -->
+                <div>
+
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Fingerprint Details</h3>
+
+                    <!-- Fingerprint Status -->
+                    <div class="flex gap-10 mt-4 md:mt-0 items-center">
+
+                        {% comment %} Main Fingerprint {% endcomment %}
+                        <div id="instructor-{{ instructor.id }}-fp" class="flex flex-col items-center hover:scale-105 transition cursor-pointer">
+                            <p class="text-sm text-gray-500 mb-2">Main</p>
+                            <div class="relative w-24 h-48 border-2 rounded-2xl overflow-hidden 
+                                        {% if fp and fp.main_id %}border-green-500{% else %}border-gray-300{% endif %}">
+                                {% if fp and fp.main_id %}
+                                <img src="{% static 'image/fgreen.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% else %}
+                                <img src="{% static 'image/fblack.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% endif %}
+                            </div>
+                            <span class="mt-2 text-sm font-medium 
+                                        {% if fp and fp.main_id %}text-green-600{% else %}text-gray-500{% endif %}">
+                                {% if fp and fp.main_id %}Registered{% else %}Not Registered{% endif %}
+                            </span>
+                        </div>
+
+                        {% comment %} Backup Fingerprint {% endcomment %}
+                        <div id="instructor-{{ instructor.id }}-fp" class="flex flex-col items-center hover:scale-105 transition cursor-pointer">
+                            <p class="text-sm text-gray-500 mb-2">Backup</p>
+                            <div class="relative w-24 h-48 border-2 rounded-2xl overflow-hidden 
+                                        {% if fp and fp.backup_id %}border-green-500{% else %}border-gray-300{% endif %}">
+                                {% if fp and fp.backup_id %}
+                                <img src="{% static 'image/fgreen.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% else %}
+                                <img src="{% static 'image/fblack.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% endif %}
+                            </div>
+                            <span class="mt-2 text-sm font-medium 
+                                        {% if fp and fp.backup_id %}text-green-600{% else %}text-gray-500{% endif %}">
+                                {% if fp and fp.backup_id %}Registered{% else %}Not Registered{% endif %}
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-6">
+        <input type="text" id="instructor_id" name="instructor_id" value="{{ instructor.id }}" hidden>
+        <!-- Schedule Table -->
+        <div class="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-700">
+
+                    <!-- Table Head -->
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wide">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Time</th>
+                            <th class="px-4 py-3 text-center font-semibold">Mon</th>
+                            <th class="px-4 py-3 text-center font-semibold">Tue</th>
+                            <th class="px-4 py-3 text-center font-semibold">Wed</th>
+                            <th class="px-4 py-3 text-center font-semibold">Thu</th>
+                            <th class="px-4 py-3 text-center font-semibold">Fri</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sat</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sun</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table Body -->
+                    <tbody id="weeklyGridBody" class="divide-y divide-gray-100">
+
+                        <tr class="hover:bg-gray-50 transition">
+                            <td colspan="8" class="text-center py-6 text-gray-400 italic">
+                                Loading schedule...
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+<div id="overlayLoader" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="flex flex-col items-center gap-2">
+        <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span class="text-white text-lg">Please wait...</span>
+    </div>
+</div>
+
+<script>
+    function timeToMinutes(t) {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+    }   
+
+    const timeSlots = [];
+
+    for (let hour = 7; hour <= 22; hour++) {
+        const formatted = String(hour).padStart(2, '0') + ":00";
+        timeSlots.push(formatted);
+    }
+
+    const subjectColors = [
+        "bg-green-300",
+        "bg-blue-300",
+        "bg-yellow-300",
+        "bg-purple-300",
+        "bg-pink-300"
+    ];    
+
+    const subjectColorMap = {};
+    let colorIndex = 0;
+
+    function getSubjectColor(subject) {
+        if (!subjectColorMap[subject]) {
+            subjectColorMap[subject] = subjectColors[colorIndex % subjectColors.length];
+            colorIndex++;
+        }
+        return subjectColorMap[subject];
+    }
+
+
+    async function loadWeeklyGrid() {
+        const body = document.getElementById("weeklyGridBody");
+
+        const res = await fetch(`/api/schedules/?instructor_id={{ instructor.id }}`);
+        const data = await res.json();
+        const days = ["M","T","W","TH","F","SAT","SUN"];
+
+        // Track merged cells
+        const skipMap = {};
+
+        body.innerHTML = "";
+
+        timeSlots.forEach((time, rowIndex) => {
+            const row = document.createElement("tr");
+
+            let cells = `<td class="border px-2 py-2 font-medium">${time}</td>`;
+
+            days.forEach(day => {
+
+                const key = `${day}-${rowIndex}`;
+
+                // ⛔ Skip if part of merged cell
+                if (skipMap[key]) return;
+
+                const match = data.schedules.find(s => {
+                    const scheduleDays = s.day.split(",").map(d => d.trim());
+
+                    return scheduleDays.includes(day) &&
+                        timeToMinutes(s.start) <= timeToMinutes(time) &&
+                        timeToMinutes(s.end) > timeToMinutes(time);
+                });
+
+                if (match) {
+
+                    // 🔥 Calculate rowspan
+                    const startMin = timeToMinutes(match.start);
+                    const endMin = timeToMinutes(match.end);
+
+                    let span = 0;
+
+                    for (let i = rowIndex; i < timeSlots.length; i++) {
+                        const slotMin = timeToMinutes(timeSlots[i]);
+
+                        if (slotMin >= startMin && slotMin < endMin) {
+                            span++;
+                            skipMap[`${day}-${i}`] = true;
+                        }
+                    }
+
+                    // remove skip for first row (we render it)
+                    delete skipMap[`${day}-${rowIndex}`];
+
+                    const colorClass = getSubjectColor(match.subject);
+
+                    cells += `
+                        <td rowspan="${span}" class="border-l-4 border-green-600 px-2 py-2 ${colorClass} text-center">
+                            <div class="font-semibold text-sm">${match.subject}</div>
+                            <div class="text-xs text-gray-600">[<i> ${match.room} </i>]</div>
+                            <div class="text-xs">${match.start} - ${match.end}</div>
+                        </td>
+                    `;
+
+                } else {
+                    cells += `<td class="border px-2 py-2"></td>`;
+                }
+
+            });
+
+            row.innerHTML = cells;
+            body.appendChild(row);
+        });
+    }
+
+
+    loadWeeklyGrid();
+</script>
+{% endblock %}

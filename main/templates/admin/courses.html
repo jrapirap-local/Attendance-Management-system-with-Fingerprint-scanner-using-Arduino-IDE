@@ -1,0 +1,441 @@
+{% extends 'builder.html' %}
+{% load static %}
+{% block page %}courses{% endblock %}
+{% block content %}
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Courses Management</h1>
+            <p class="text-sm text-gray-500">Manage courses </p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- LEFT PANEL -->
+        <div class="bg-white p-6 rounded-2xl shadow-md space-y-6">
+
+            <!-- DASHBOARD CARDS -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-4 rounded-xl shadow">
+                    <h2 class="text-sm opacity-80">Total Active Courses</h2>
+                    <p id="totalCourse" class="text-3xl font-bold">0</p>
+                </div>
+
+            </div>
+
+            <!-- CREATE COURSE -->
+            <div>
+                <h2 class="text-xl font-bold mb-4">Add Course</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div>
+                        <input id="course_name" class="w-full p-2 border rounded-lg mt-1" placeholder="Course Name">
+                    </div>
+
+                    <div>
+                        <input id="course_code" class="w-full p-2 border rounded-lg mt-1" placeholder="Course Code">
+                    </div>
+
+                </div>
+
+                <div class="mt-4">
+                    <textarea id="description"
+                        class="w-full p-2 border rounded-lg mt-1" placeholder="Description"></textarea>
+                </div>
+
+                <button onclick="createCourse()"
+                    class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    Save Course
+                </button>
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="flex-1 bg-white p-6 rounded-xl shadow">
+
+            <h2 class="text-xl font-bold mb-4">Course List</h2>
+
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-green-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium">Course Code</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium">Course Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium">Description</th>
+                    </tr>
+                </thead>
+
+                <tbody id="courseTable" class="divide-y"></tbody>
+            </table>
+
+        </div>
+
+    </div>
+</main>
+
+<div id="profileModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+
+  <!-- BACKDROP -->
+  <div class="absolute inset-0 bg-black/50"></div>
+
+  <!-- CENTER WRAPPER -->
+  <div class="relative flex items-center justify-center min-h-screen p-4">
+
+    <!-- MODAL CARD -->
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- HEADER -->
+      <div class="flex justify-between items-start p-6 border-b bg-gray-50">
+
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Course Profile</h2>
+            <p class="text-sm text-gray-500">Detailed course overview</p>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="openEditFromProfile()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Edit
+          </button>
+
+          <button onclick="deleteFromProfile()"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            Delete
+          </button>
+
+          <button onclick="closeProfile()"
+            class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+            ✕
+          </button>
+        </div>
+
+      </div>
+
+      <!-- BODY -->
+      <div class="p-6 space-y-6">
+
+        <!-- INFO GRID -->
+        <div class="grid grid-cols-2 gap-4">
+
+        <input type="hidden" id="course_profile_id">
+
+        <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Course Name</p>
+            <p id="sp_name" class="font-semibold"></p>
+        </div>
+
+        <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Course Code</p>
+            <p id="sp_code" class="font-semibold"></p>
+        </div>
+
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div>
+          <p class="text-xs text-gray-500 mb-1">Description</p>
+          <p id="sp_description" class="text-gray-700 bg-gray-50 p-3 rounded-lg"></p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+
+  <!-- BACKDROP -->
+  <div class="absolute inset-0 bg-black/50"></div>
+
+  <!-- CENTER -->
+  <div class="relative flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- HEADER -->
+      <div class="flex justify-between items-start p-6 border-b bg-gray-50">
+
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Edit Course</h2>
+          <p class="text-sm text-gray-500">Update course details</p>
+        </div>
+
+        <button onclick="closeModal()"
+          class="px-4 py-2 border rounded-lg hover:bg-gray-100">
+          ✕
+        </button>
+
+      </div>
+
+      <!-- BODY -->
+      <div class="p-6 space-y-6">
+
+        <input type="hidden" id="edit_id">
+
+        <!-- GRID -->
+        <div class="grid grid-cols-2 gap-4">
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Course Name</p>
+            <input id="edit_name"
+              class="w-full mt-1 font-semibold bg-transparent outline-none"
+              placeholder="Enter class name">
+          </div>
+
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-xs text-gray-500">Course Code</p>
+            <input id="edit_code"
+              class="w-full mt-1 font-semibold bg-transparent outline-none"
+              placeholder="Enter class code">
+          </div>
+
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="p-4 bg-gray-50 rounded-xl">
+          <p class="text-xs text-gray-500">Description</p>
+          <textarea id="edit_description"
+            class="w-full mt-1 bg-transparent outline-none resize-none"
+            rows="3"
+            placeholder="Enter description"></textarea>
+        </div>
+
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="flex justify-end gap-3 p-6 border-t bg-gray-50">
+
+        <button onclick="updateCourse()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          Save Changes
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+<script>
+    function openProfile(row) {
+        document.getElementById("course_profile_id").value = row.dataset.id;
+
+        document.getElementById("sp_name").innerText = row.dataset.name;
+        document.getElementById("sp_code").innerText = row.dataset.code;
+        document.getElementById("sp_description").innerText = row.dataset.description || '';
+
+
+        const modal = document.getElementById("profileModal");
+        modal.classList.remove("hidden");
+
+        setTimeout(() => {
+            modal.classList.remove("opacity-0");
+        }, 10);
+    }
+
+    function closeProfile() {
+        const modal = document.getElementById("profileModal");
+        modal.classList.add("opacity-0");
+
+        setTimeout(() => {
+            modal.classList.add("hidden");
+        }, 300);
+    }  
+
+    function createCourse() {
+        let name = document.getElementById("course_name").value;
+        let code = document.getElementById("course_code").value;
+        let description = document.getElementById("description").value;
+
+        if (!name || !code) {
+            alert("Please fill all required fields");
+            return;
+        }
+
+        let formData = new FormData();
+        formData.append("course_name", name);
+        formData.append("course_code", code);
+        formData.append("description", description);
+
+        fetch("/course/create/", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                showSuccess(data.message);
+                loadCourse();
+                name.value = "";
+                code.value = "";
+                description.value = "";
+            } else {
+                showError(data.message);
+            }
+        });
+    }  
+
+    async function openEditFromProfile() {
+        const id = document.getElementById("course_profile_id").value;
+
+        document.getElementById("edit_id").value = id;
+        document.getElementById("edit_name").value = document.getElementById("sp_name").innerText;
+        document.getElementById("edit_code").value = document.getElementById("sp_code").innerText;
+        document.getElementById("edit_description").value = document.getElementById("sp_description").innerText;
+
+        closeProfile();
+        document.getElementById("editModal").classList.remove("hidden");
+    }    
+
+    function closeModal() {
+        document.getElementById("editModal").classList.add("hidden");
+    }
+
+
+    function showToast(message) {
+        const toast = document.createElement("div");
+        toast.className = "fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow";
+        toast.textContent = message;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function loadCourse() {
+        fetch("/api/course/")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("totalCourse").textContent = data.course.length;
+
+            let totalHours = 0;
+            data.course.forEach(s => {
+                totalHours += s.hours || 0;
+            });
+
+            let table = document.getElementById("courseTable");
+
+            if (data.course.length === 0) {
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center p-4 text-gray-500">
+                            No Course available
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            let rows = "";
+            data.course.forEach(c => {
+                rows += `
+                <tr 
+                    class="border-t hover:bg-gray-100 cursor-pointer transition"
+                    onclick='openProfile(this)'
+                    data-id="${c.id}"
+                    data-name="${c.name}"
+                    data-code="${c.code}"
+                    data-description="${c.description || ''}"
+                >
+                    <td class="px-6 py-4">${c.code}</td>
+                    <td class="px-6 py-4">${c.name}</td>
+                    <td class="px-6 py-4">${c.description || ''}</td>
+                </tr>
+                `;
+            });
+
+            table.innerHTML = rows;
+        })
+        .then(data => {
+            if (openId) {
+                // find the row with matching ID
+                const row = document.querySelector(`[data-id="${openId}"]`);
+
+                if (row) {
+                    openProfile(row);
+                } else {
+                    console.warn("Row not found for ID:", openId);
+                }
+            }
+            params = "";
+            openId = "";
+        });
+    }
+
+    // DELETE
+    function deleteFromProfile() {
+
+        let id = document.getElementById("course_profile_id").value;
+
+        Swal.fire({
+            title: "Delete course?",
+            text: "This cannot be undone",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                fetch(`/course/delete/${id}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCSRFToken()
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        showSuccess(data.message);
+                        closeProfile();
+                        loadCourse();
+                    } else {
+                        showError(data.message);
+                    }
+                });
+            }
+        });
+    }
+
+    function updateCourse() {
+        let id = document.getElementById("edit_id").value;
+
+        let formData = new FormData();
+        formData.append("name", document.getElementById("edit_name").value);
+        formData.append("room_code", document.getElementById("edit_code").value);
+        formData.append("description", document.getElementById("edit_description").value);
+
+        fetch(`/course/update/${id}/`, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                showSuccess(data.message);
+                closeModal();
+                loadCourse();
+            } else {
+                showError(data.message);
+            }
+        });
+    }    
+
+    loadCourse();
+    document.addEventListener("DOMContentLoaded", function () {
+        params = new URLSearchParams(window.location.search);
+        openId = params.get("open");
+    }); 
+
+</script>
+{% endblock %}

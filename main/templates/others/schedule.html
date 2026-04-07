@@ -1,0 +1,161 @@
+{% extends 'builder-user.html' %}
+{% load static %}
+{% block page %}schedule-ins{% endblock %}
+{% block content %}
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">My Schedule</h1>
+            <p class="text-sm text-gray-500">Instructor weekly schedule</p>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto px-6">
+        <input type="text" id="instructor_id" name="instructor_id" value="{{ request.user.id }}" hidden>
+        <!-- Schedule Table -->
+        <div class="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-700">
+
+                    <!-- Table Head -->
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wide">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Time</th>
+                            <th class="px-4 py-3 text-center font-semibold">Mon</th>
+                            <th class="px-4 py-3 text-center font-semibold">Tue</th>
+                            <th class="px-4 py-3 text-center font-semibold">Wed</th>
+                            <th class="px-4 py-3 text-center font-semibold">Thu</th>
+                            <th class="px-4 py-3 text-center font-semibold">Fri</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sat</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sun</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table Body -->
+                    <tbody id="weeklyGridBody" class="divide-y divide-gray-100">
+
+                        <tr class="hover:bg-gray-50 transition">
+                            <td colspan="8" class="text-center py-6 text-gray-400 italic">
+                                Loading schedule...
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    function timeToMinutes(t) {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+    }   
+
+    const timeSlots = [
+        "08:00","08:30","09:00","09:30",
+        "10:00","10:30","11:00","11:30",
+        "12:00","12:30","13:00","13:30",
+        "14:00","14:30","15:00","15:30",
+    ];
+
+    const subjectColors = [
+        "bg-green-300",
+        "bg-blue-300",
+        "bg-yellow-300",
+        "bg-purple-300",
+        "bg-pink-300"
+    ];    
+
+    const subjectColorMap = {};
+    let colorIndex = 0;
+
+    function getSubjectColor(subject) {
+        if (!subjectColorMap[subject]) {
+            subjectColorMap[subject] = subjectColors[colorIndex % subjectColors.length];
+            colorIndex++;
+        }
+        return subjectColorMap[subject];
+    }
+
+    async function loadWeeklyGrid() {
+        const body = document.getElementById("weeklyGridBody");
+
+        const res = await fetch(`/api/schedules/?instructor_id=${instructor_id.value}`);
+        const data = await res.json();
+
+        const days = ["M","T","W","TH","F","SAT","SUN"];
+
+        // Track merged cells
+        const skipMap = {};
+
+        body.innerHTML = "";
+
+        timeSlots.forEach((time, rowIndex) => {
+            const row = document.createElement("tr");
+
+            let cells = `<td class="border px-2 py-2 font-medium">${time}</td>`;
+
+            days.forEach(day => {
+
+                const key = `${day}-${rowIndex}`;
+
+                // ⛔ Skip if part of merged cell
+                if (skipMap[key]) return;
+
+                const match = data.schedules.find(s => {
+                    const scheduleDays = s.day.split(",").map(d => d.trim());
+
+                    return scheduleDays.includes(day) &&
+                        timeToMinutes(s.start) <= timeToMinutes(time) &&
+                        timeToMinutes(s.end) > timeToMinutes(time);
+                });
+
+                if (match) {
+
+                    // 🔥 Calculate rowspan
+                    const startMin = timeToMinutes(match.start);
+                    const endMin = timeToMinutes(match.end);
+
+                    let span = 0;
+
+                    for (let i = rowIndex; i < timeSlots.length; i++) {
+                        const slotMin = timeToMinutes(timeSlots[i]);
+
+                        if (slotMin >= startMin && slotMin < endMin) {
+                            span++;
+                            skipMap[`${day}-${i}`] = true;
+                        }
+                    }
+
+                    // remove skip for first row (we render it)
+                    delete skipMap[`${day}-${rowIndex}`];
+
+                    const colorClass = getSubjectColor(match.subject);
+
+                    cells += `
+                        <td rowspan="${span}" class="border-l-4 border-green-600 px-2 py-2 ${colorClass} text-center">
+                            <div class="font-semibold text-sm">${match.subject}</div>
+                            <div class="text-xs text-gray-600">[<i> ${match.room} </i>]</div>
+                            <div class="text-xs">${match.start} - ${match.end}</div>
+                        </td>
+                    `;
+
+                } else {
+                    cells += `<td class="border px-2 py-2"></td>`;
+                }
+
+            });
+
+            row.innerHTML = cells;
+            body.appendChild(row);
+        });
+    }
+
+    loadWeeklyGrid();
+</script>
+{% endblock %}

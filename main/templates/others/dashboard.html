@@ -1,0 +1,57 @@
+{% extends 'builder-user.html' %}
+{% block page %}dashboard-ins{% endblock %}
+{% block content %}
+
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+            <p class="text-sm text-gray-500">Attendance Management system</p>
+        </div>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border">
+        <h2 class="text-sm text-gray-500">Total Instructors</h2>
+        <p class="text-2xl font-bold mt-2">120</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border">
+        <h2 class="text-sm text-gray-500">Classes</h2>
+        <p class="text-2xl font-bold mt-2">35</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border">
+        <h2 class="text-sm text-gray-500">Attendance Today</h2>
+        <p class="text-2xl font-bold mt-2">92%</p>
+        </div>
+
+    </div>
+
+    <!-- Table Example -->
+    <div class="bg-white p-5 rounded-2xl shadow-sm border">
+        <h2 class="text-lg font-semibold mb-4">Recent Activity</h2>
+        <table class="w-full text-sm">
+        <thead class="text-left text-gray-500 border-b">
+            <tr>
+            <th class="py-2">Name</th>
+            <th>Status</th>
+            <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="border-b hover:bg-gray-50">
+            <td class="py-2">John Doe</td>
+            <td class="text-green-500">Present</td>
+            <td>Today</td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+
+</main>
+
+{% endblock %}

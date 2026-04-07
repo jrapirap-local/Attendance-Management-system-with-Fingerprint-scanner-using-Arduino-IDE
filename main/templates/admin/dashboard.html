@@ -1,112 +1,149 @@
 {% extends 'builder.html' %}
 {% load static %}
+{% block page %}dashboard{% endblock %}
 
 {% block content %}
-<div class="container">
-  {% include 'admin/sidebar.html' %}
-  <div id="dashboard">
-    <h1>Dashboard</h1>
-    <hr/>
-    <div class="bento-container">
-        <!-- Card 1 -->
-        <div class="bento-card fog fog-success">
-            <h3>Users</h3>
-            <p>1,245 Active Users</p>
-        </div>
+<main class="p-4 md:p-6 space-y-6 min-h-screen">
 
-        <!-- Card 2 -->
-        <div class="bento-card fog fog-warning">
-            <h3>News</h3>
-            <p>5 Latest Articles</p>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="bento-card fog fog-danger">
-            <h3>Comlab Tasks</h3>
-            <p>12 Pending Tasks</p>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="bento-card fog fog-secondary">
-            <h3>Revenue</h3>
-            <p>$24,500 This Month</p>
-        </div>
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+        <span class="text-sm text-gray-900">Active ver. 0.75a</span>
     </div>
-    <hr/>
-    <div class="dashboard-row">
 
-        <!-- Announcement -->
-        <div class="announcement-card fog-danger">
-            <h3>Announcement</h3>
-            <p>
-                The computer laboratory will undergo maintenance 
-                tomorrow from 2PM–4PM.
-            </p>
-            <small>June 12, 2026</small>
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center hover:shadow-md transition">
+            <div>
+                <p class="text-gray-500 text-sm">Classrooms</p>
+                <h2 class="text-2xl font-bold">{{ total_classrooms }}</h2>
+                <span class="text-xs text-green-500">+ this week</span>
+            </div>
+            <div class="bg-blue-100 text-blue-600 p-3 rounded-xl">
+                <i class="fas fa-school"></i>
+            </div>
         </div>
 
-        <!-- Table -->
-        <div class="table-container">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center hover:shadow-md transition">
+            <div>
+                <p class="text-gray-500 text-sm">Computer Labs</p>
+                <h2 class="text-2xl font-bold">{{ total_comlabs }}</h2>
+                <span class="text-xs text-green-500">+ this week</span>
+            </div>
+            <div class="bg-purple-100 text-purple-600 p-3 rounded-xl">
+                <i class="fas fa-desktop"></i>
+            </div>
+        </div>
 
-            <h3>Recent Users</h3>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center hover:shadow-md transition">
+            <div>
+                <p class="text-gray-500 text-sm">Subjects</p>
+                <h2 class="text-2xl font-bold">{{ total_subjects }}</h2>
+                <span class="text-xs text-blue-500">updated</span>
+            </div>
+            <div class="bg-red-100 text-red-600 p-3 rounded-xl">
+                <i class="fas fa-book"></i>
+            </div>
+        </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Time In</th>
-                        <th>Time Out</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>John Doe</td>
-                        <td>john@email.com</td>
-                        <td>N/A</td>
-                        <td>N/A</td>
-                        <td>Active</td>
-                    </tr>
-
-                    <tr>
-                        <td>2</td>
-                        <td>Jane Smith</td>
-                        <td>jane@email.com</td>
-                        <td>N/A</td>
-                        <td>N/A</td>
-                        <td>Pending</td>
-                    </tr>
-                </tbody>
-            </table>
-
+        <div class="bg-white p-5 rounded-2xl shadow-sm border flex justify-between items-center hover:shadow-md transition">
+            <div>
+                <p class="text-gray-500 text-sm">Instructors</p>
+                <h2 class="text-2xl font-bold">{{ total_instructors }}</h2>
+                <span class="text-xs text-yellow-500">active</span>
+            </div>
+            <div class="bg-green-100 text-green-600 p-3 rounded-xl">
+                <i class="fas fa-user-tie"></i>
+            </div>
         </div>
 
     </div>
 
-  </div>
-</div>
+    <!-- Charts + Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Quick Actions -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border">
+            <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+                <a href="#" class="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-xl text-center">+ Classroom</a>
+                <a href="#" class="bg-green-500 hover:bg-green-600 text-white p-3 rounded-xl text-center">+ Instructor</a>
+                <a href="#" class="bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-xl text-center">+ Subject</a>
+                <a href="#" class="bg-red-500 hover:bg-red-600 text-white p-3 rounded-xl text-center">+ News</a>
+            </div>
+        </div>
 
-<script>
+    </div>
 
-function togglePasswordVisibility(fieldId, checkbox) {
-  const field = document.getElementById(fieldId);
-  field.type = checkbox.checked ? 'text' : 'password';
-}
+    <!-- Timeline + News -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-function detectCapsLock(fieldId, warningId) {
-  const field = document.getElementById(fieldId);
-  const warning = document.getElementById(warningId);
-  if(!field || !warning) return;
-  field.addEventListener('keydown', function(e){
-    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
-  });
-  field.addEventListener('keyup', function(e){
-    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
-  });
-}
-</script>
+        <!-- Timeline -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border">
+            <h2 class="text-lg font-semibold mb-6">Recent Activity</h2>
+
+            <div class="relative border-l-2 border-gray-200 ml-4 max-h-96 overflow-y-auto pr-2">
+                {% for item in combined_items %}
+                <div class="mb-6 ml-6 relative">
+
+                    {% if item.type == "Classroom" %}
+                    <span class="absolute -left-6 top-1 w-4 h-4 bg-blue-500 rounded-full"></span>
+                    {% elif item.type == "Instructor" %}
+                    <span class="absolute -left-6 top-1 w-4 h-4 bg-green-500 rounded-full"></span>
+                    {% elif item.type == "ComLab" %}
+                    <span class="absolute -left-6 top-1 w-4 h-4 bg-purple-500 rounded-full"></span>
+                    {% elif item.type == "Subject" %}
+                    <span class="absolute -left-6 top-1 w-4 h-4 bg-red-500 rounded-full"></span>
+                    {% endif %}
+
+                    <p class="text-gray-800 font-medium">{{ item.name }}</p>
+                    <span class="text-gray-400 text-xs">
+                        {{ item.type }} • {{ item.created_at|date:"M d, Y H:i" }}
+                    </span>
+                </div>
+                {% empty %}
+                <p class="text-gray-400 ml-4">No recent activity.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- News -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold">Pinned News</h2>
+                <a href="{% url 'news' %}" class="text-sm text-blue-500 hover:underline">View all</a>
+            </div>
+
+            <ul class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {% for news in pinned_news %}
+                <li class="flex gap-3 border-b pb-3">
+
+                    <img 
+                        src="{% if news.created_by.profile_pic %}{{ news.created_by.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                        class="w-10 h-10 rounded-full object-cover"
+                    >
+
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">
+                            {{ news.created_by.get_full_name|default:news.created_by.username }}
+                        </p>
+                        <p class="text-gray-500 text-sm line-clamp-2">
+                            {{ news.body }}
+                        </p>
+                        <span class="text-xs text-gray-400">
+                            {{ news.created_at|timesince }} ago
+                        </span>
+                    </div>
+
+                </li>
+                {% empty %}
+                <li class="text-gray-400">No pinned news available.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+</main>
+
 {% endblock %}

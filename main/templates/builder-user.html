@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Monitoring System</title>
+    {% load static %}
+    <link rel="shortcut icon" type="image/png" href="{% static 'image/logoams.png' %}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js for dropdowns -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>  
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#16a34a',  // green-600
+            secondary: '#f3f4f6', // gray-100
+          },
+        },
+      }
+    }
+
+    const Toast = Swal.mixin({
+        toast: true,              // enable toast mode
+        position: 'top-end',      // top-right corner
+        showConfirmButton: false, // no confirm button
+        timer: 2000,              // auto close after 2 seconds
+        timerProgressBar: true,   // show progress bar
+        background: '#48bb78',    // optional: green background
+        iconColor: 'white',       // icon color
+        customClass: {
+            popup: 'shadow-lg rounded-lg px-6 py-3 text-white'
+        }
+    });   
+  </script>
+</head>
+
+<body x-data="{ sidebarOpen: false }" class="bg-gray-100 min-h-screen font-sans text-gray-700"  data-page="{% block page %}{% endblock %}">
+<!-- Overlay (mobile only) -->
+  <div x-show="sidebarOpen" 
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+      @click="sidebarOpen = false">
+  </div>
+  <div class="flex h-screen">
+
+  <!-- Sidebar -->
+  <aside 
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    class="fixed md:static z-50 top-0 left-0 w-64 bg-green-900 text-slate-300 flex flex-col h-full transform md:translate-x-0 transition-all duration-300"
+  >
+
+    <!-- Logo -->
+    <div class="flex items-center gap-3 px-6 py-5 border-b border-green-800">
+      <img src="{% static 'image/logoams.png' %}" class="h-10 w-10 rounded-lg">
+      <span class="text-white font-semibold text-lg">AMS</span>
+    </div>
+
+    <!-- Menu -->
+    <div class="flex-1 px-4 py-4 space-y-1 text-sm">
+
+      <a href="{% url 'dashboard_ins' %}" class="flex items-center gap-3 px-4 py-2 rounded-lg bg-green-800 text-white" data-page="dashboard-ins">
+        <iconify-icon icon="heroicons:chart-bar"></iconify-icon> Dashboard
+      </a>
+
+      <a href="{% url 'news_ins' %}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-green-800" data-page="news-ins">
+        <iconify-icon icon="heroicons:newspaper"></iconify-icon> News
+      </a>
+
+      <a href="{% url 'schedule_ins' %}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-green-800" data-page="schedule-ins">
+        <iconify-icon icon="heroicons:academic-cap"></iconify-icon> My Schedule
+      </a>
+
+      <a href="{% url 'dtr_ins' %}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-green-800" data-page="dtr-ins">
+        <iconify-icon icon="heroicons:book-open"></iconify-icon> Daily Time Records
+      </a>      
+
+      <!-- <a href="{% url 'comlab' %}" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-green-800" data-page="comlab">
+        <iconify-icon icon="heroicons:computer-desktop"></iconify-icon> Computer Laboratory
+      </a>
+      <div x-data="{ open: false }" x-ref="manageDropdown">
+        <button @click="open = !open"
+          class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-green-800">
+          <span class="flex items-center gap-3"><iconify-icon icon="heroicons:users"></iconify-icon> Instructor</span>
+          <span>▾</span>
+        </button>
+
+        <div x-show="open" class="pl-10 mt-1 space-y-1 text-sm">
+          <a href="{% url 'instructor' %}" class="sidebar-link block px-4 py-2 rounded-lg hover:text-white" data-page="instructor">Instructor List</a>
+          <a href="{% url 'instructornew' %}" class="sidebar-link block px-4 py-2 rounded-lg hover:text-white" data-page="instructor-new">Add Instructor</a>
+          <a href="{% url 'instructor-attendance' %}" class="sidebar-link block px-4 py-2 rounded-lg hover:text-white" data-page="instructor-attendance">Attendance</a>
+          <a href="{% url 'instructor-dtr' %}" class="sidebar-link block px-4 py-2 rounded-lg hover:text-white" data-page="instructor-dtr">DTR</a>
+        </div>
+      </div> -->
+
+
+      <!-- Dropdown -->
+      <!-- <div x-data="{ open: false }" x-ref="manageDropdown">
+        <button @click="open = !open"
+          class="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-green-800">
+          <span class="flex items-center gap-3"><iconify-icon icon="heroicons:cog-6-tooth"></iconify-icon> Manage</span>
+          <span>▾</span>
+        </button>
+
+        <div x-show="open" class="pl-10 mt-1 space-y-1 text-sm">
+          <a href="{% url 'adminpage' %}" class="sidebar-link block px-4 py-2 rounded-lg hover:text-white" data-page="admin-users">Users</a>
+          <a href="{% url 'database-settings' %}" class="sidebar-link block px-4 py-2 rounded-lg hover:text-white" data-page="database">Database</a>
+        </div>
+      </div> -->
+
+    </div>
+  </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-auto">
+      
+      <!-- Navbar -->
+      <nav class="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div class="flex items-center justify-between px-4 md:px-6 py-3">
+
+          <!-- Left -->
+          <div class="flex items-center gap-3">
+            <button @click="sidebarOpen = true" class="md:hidden text-gray-600 text-xl">☰</button>
+
+            <!-- Search -->
+            <div class="relative w-64 hidden md:block">
+              <input 
+                type="text" 
+                id="globalSearch"
+                placeholder="Search anything..."
+                class="w-full px-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              >
+
+              <!-- Results Dropdown -->
+              <div id="searchResults" 
+                  class="absolute w-full bg-white border rounded-lg shadow-lg mt-2 hidden z-50 max-h-64 overflow-y-auto">
+              </div>
+            </div>
+          </div>
+
+          <!-- Right -->
+          <div class="flex items-center gap-4">
+
+            <!-- User -->
+            <div class="relative" x-data="{ open: false }">
+              <button @click="open = !open" class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-full bg-green-500 text-white flex items-center justify-center font-semibold">
+                  {{ request.user.username|slice:":1"|upper }}
+                </div>
+                <span class="hidden md:block text-sm font-medium">{{ request.user.username }}</span>
+              </button>
+
+              <div x-show="open" @click.away="open = false"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border">
+
+                <a href="{% url 'profile_ins' %}" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
+                <!-- <a href="#" class="block px-4 py-2 hover:bg-gray-100">Settings</a> -->
+                <hr>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-500 hover:bg-red-50">Logout</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Page Content -->
+      <main class="p-6 flex-1">
+        {% block content %}
+        {% endblock %}
+      </main>
+
+      <!-- Footer -->
+      <footer class="bg-white shadow-inner p-4 text-center text-sm text-gray-500">
+        &copy; {{ now.year }} Attendance Monitoring System. All rights reserved.
+      </footer>
+    </div>
+
+  </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const currentPage = document.body.dataset.page;
+
+      document.querySelectorAll("[data-page]").forEach(link => {
+          if (link.dataset.page === currentPage) {
+
+              // highlight active link
+              link.classList.add("bg-gray-200", "text-green-900");
+
+              // find closest dropdown
+              const dropdown = link.closest('[x-data]');
+              if (dropdown) {
+                  // use Alpine's reactive scope safely
+                  const data = Alpine.$data(dropdown);
+                  if (data && typeof data.open !== "undefined") {
+                      data.open = true;
+                  }
+              }
+          }
+      });
+  });
+
+const input = document.getElementById("globalSearch");
+const resultsBox = document.getElementById("searchResults");
+
+input.addEventListener("input", function () {
+    const query = this.value;
+
+    if (query.length < 1) {
+        resultsBox.classList.add("hidden");
+        return;
+    }
+
+    fetch(`/search-instructor/?q=${query}`)
+        .then(res => res.json())
+        .then(data => {
+            resultsBox.innerHTML = "";
+
+            if (data.results.length === 0) {
+                resultsBox.innerHTML = `<div class="p-2 text-gray-500">No results</div>`;
+            } else {
+                data.results.forEach(item => {
+                    const div = document.createElement("a");
+                    div.href = item.url;
+                    div.className = "block px-4 py-2 hover:bg-gray-100";
+
+                    div.innerHTML = `
+                        <div class="text-sm font-medium">${item.title}</div>
+                        <div class="text-xs text-gray-500">${item.type}</div>
+                    `;
+
+                    resultsBox.appendChild(div);
+                });
+            }
+
+            resultsBox.classList.remove("hidden");
+        })
+        .catch(error => {
+            console.error("Search error:", error);
+            resultsBox.innerHTML = `<div class="p-2 text-red-500">Error loading results</div>`;
+            resultsBox.classList.remove("hidden");
+        });
+});
+
+  // click outside → close
+  document.addEventListener("click", function (e) {
+      if (!input.contains(e.target) && !resultsBox.contains(e.target)) {
+          resultsBox.classList.add("hidden");
+      }
+  });  
+
+    function showSuccess(message) {
+        Swal.fire({
+            icon: "success",
+            title: "Success",
+            text: message,
+            timer: 2000,
+            showConfirmButton: false
+        });
+    }
+
+    function showError(message) {
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: message
+        });
+    }
+
+    // CSRF
+    function getCSRFToken() {
+        return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1];
+    }      
+</script>
+</body>
+</html>

@@ -1,364 +1,532 @@
 from django.db import models # type: ignore
 from django.utils import timezone # type: ignore
-from django.contrib.auth.models import User # type: ignore
+from main.utils import generate_token
+from django.contrib.auth.models import User, AbstractUser, Group, Permission # type: ignore
+from django.conf import settings
+from django.core.exceptions import ValidationError
+import uuid
+from django.contrib.auth.hashers import make_password, check_password
 
+# ================== Choice Classes ==================
+class Gender(models.TextChoices):
+    MALE = "Male", "Male"
+    FEMALE = "Female", "Female"
+    OTHER = "Other", "Other"
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
-    
-class UserData(models.Model):
-    profile_id = models.IntegerField(default=1)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    data_field = models.CharField(max_length=255)
-    profile_picture = models.ImageField(upload_to='profile_pictures', null=True, blank=True)
-    bio = models.TextField(max_length=500, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    # Existing fields
-    first_name = models.CharField(max_length=100, default='')
-    last_name = models.CharField(max_length=100, default='')
-    address = models.CharField(max_length=255, null=True, blank=True)  # Assuming you want address in your profile
-    date_of_birth = models.DateField(null=True, blank=True)  # You can add date_of_birth if needed
-    age = models.IntegerField(null=True, blank=True)
-    contact_number = models.CharField(max_length=15, null=True, blank=True)
-    current_workplace = models.CharField(max_length=255, blank=True, null=True)
-    position = models.CharField(max_length=100, blank=True, null=True)
+class EmploymentStatus(models.TextChoices):
+    PERMANENT = "Permanent", "Permanent"
+    TEMPORARY = "Temporary", "Temporary"
+    CONTRACT = "Contract of Service", "Contract of Service"
 
-    # New fields
-    working_experience = models.TextField(blank=True, null=True)
-    education = models.TextField(blank=True, null=True)
-    skills = models.TextField(blank=True, null=True)
+class Designation(models.TextChoices):
+    DEPT_CHAIR = "Department Chair", "Department Chair"
+    DEPT_SECRETARY = "Department Secretary", "Department Secretary"
+    IT_COORDINATOR = "IT Program Coordinator", "IT Program Coordinator"
+    CS_COORDINATOR = "CS Program Coordinator", "CS Program Coordinator"
+    EXT_COORDINATOR = "Department Extension Coordinator", "Department Extension Coordinator"
+    RESEARCH_COORDINATOR = "Department Research Coordinator", "Department Research Coordinator"
+    INSTRUCTOR = "Instructor", "Instructor"
 
-    def __str__(self):
-        return f"{self.user.username}"
-    
-class Attendance(models.Model):
-    IdNum = models.CharField(max_length=5, default='')
-    profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    first_name = models.CharField(max_length=100)
-    middle_name = models.CharField(max_length=100, blank=True)
-    last_name = models.CharField(max_length=100)
-    #username = models.CharField(max_length=100, unique=True)
-    #email = models.EmailField(unique=True)
-    #address = models.TextField()
-    GENDER_CHOICES = [
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('O', 'Other'),
-    ]
-    #gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    date = models.DateField(null=True, blank=True)
-    time_in = models.TimeField(null=True, blank=True)
-    time_out = models.TimeField(null=True, blank=True)
-    STATUS_CHOICES = [
-        ('leave', 'Leave'),
-        ('in', 'In'),
-        ('out', 'Out'),
-    ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in')  # Adding the status field with choices
+class AcademicRank(models.TextChoices):
+    INSTRUCTOR_1 = "Instructor 1", "Instructor 1"
+    INSTRUCTOR_2 = "Instructor 2", "Instructor 2"
+    INSTRUCTOR_3 = "Instructor 3", "Instructor 3"
+    ASSISTANT_PROF_1 = "Assistant Professor 1", "Assistant Professor 1"
+    ASSISTANT_PROF_2 = "Assistant Professor 2", "Assistant Professor 2"
+    ASSISTANT_PROF_3 = "Assistant Professor 3", "Assistant Professor 3"
+    ASSISTANT_PROF_4 = "Assistant Professor 4", "Assistant Professor 4"
+    PROFESSOR_1 = "Professor 1", "Professor 1"
+    PROFESSOR_2 = "Professor 2", "Professor 2"
+    PROFESSOR_3 = "Professor 3", "Professor 3"
+    PROFESSOR_4 = "Professor 4", "Professor 4"
+    PROFESSOR_5 = "Professor 5", "Professor 5"
 
-    def __str__(self):
-        return self.first_name
-    
-class History(models.Model):
-    IdNum = models.CharField(max_length=5, default='')
-    profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    time_in = models.TimeField(null=True, blank=True, default=timezone.now)
-    time_out = models.TimeField(null=True, blank=True, default=timezone.now)
-    date = models.DateField(null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-
-class Schedule(models.Model):
-    DAYS_OF_WEEK = [
-        ('Monday', 'Monday'),
-        ('Tuesday', 'Tuesday'),
-        ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'),
-        ('Friday', 'Friday'),
-        ('Saturday', 'Saturday'),
-        ('Sunday', 'Sunday'),
-    ]
-
-    attendance = models.OneToOneField(Attendance, on_delete=models.CASCADE)
-    monday_start = models.TimeField(null=True, blank=True)
-    monday_end = models.TimeField(null=True, blank=True)
-    tuesday_start = models.TimeField(null=True, blank=True)
-    tuesday_end = models.TimeField(null=True, blank=True)
-    wednesday_start = models.TimeField(null=True, blank=True)
-    wednesday_end = models.TimeField(null=True, blank=True)
-    thursday_start = models.TimeField(null=True, blank=True)
-    thursday_end = models.TimeField(null=True, blank=True)
-    friday_start = models.TimeField(null=True, blank=True)
-    friday_end = models.TimeField(null=True, blank=True)
-    saturday_start = models.TimeField(null=True, blank=True)
-    saturday_end = models.TimeField(null=True, blank=True)
-    sunday_start = models.TimeField(null=True, blank=True)
-    sunday_end = models.TimeField(null=True, blank=True)
-
-    def __str__(self):
-        return f"Schedule for {self.attendance.IdNum}"
-
-class Employee(models.Model):
-    GENDER_CHOICES = (
-        ('Male', 'Male'),
-        ('Female', 'Female'),
-        ('Other', 'Other'),
-    )
-
-    WHEREABOUTS_CHOICES = (
-        ('IN', 'IN'),
-        ('OUT', 'OUT'),
-        ('CLASS', 'CLASS'),
-        ('OFFICIAL BUSINESS', 'OFFICIAL BUSINESS'),
-        ('ON LEAVE', 'ON LEAVE'),
-        ('MEETING', 'MEETING'),
-    )
-
-    idNum = models.CharField(max_length=20, unique=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+# ================== Custom User Model ==================
+class CustomUser(AbstractUser):
+    # ================= PERSONAL INFO =================
+    profile_id = models.CharField(max_length=50, null=True, blank=True)
     middle_name = models.CharField(max_length=100, blank=True, null=True)
-    birthday = models.DateField(default='1999-05-24')
-    age = models.PositiveIntegerField(default=25)
+    birthday = models.DateField(blank=True, null=True)
+    age = models.PositiveIntegerField(blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=Gender.choices, null=True)
 
-    # Dynamic choices via ForeignKey
-    status = models.ForeignKey('StatusofEmployment', on_delete=models.SET_NULL, null=True, blank=True, related_name="employees")
-    position = models.ForeignKey('AcademicalRank', on_delete=models.SET_NULL, null=True, blank=True, related_name="employees")
-    organization = models.ForeignKey('Designation', on_delete=models.SET_NULL, null=True, blank=True, related_name="employees")
+    # ================= EMPLOYMENT =================
+    instructor_id = models.CharField(max_length=10, blank=True, null=True)
+    employment_status = models.CharField(max_length=50, choices=EmploymentStatus.choices, null=True)
+    designation = models.CharField(max_length=100, choices=Designation.choices, null=True)
+    academic_rank = models.CharField(max_length=100, choices=AcademicRank.choices, null=True)
+    date_of_employment = models.DateField(blank=True, null=True)
+    workloads = models.PositiveIntegerField(default=0)
 
-    profile = models.ImageField(upload_to='profile_pics', null=True, blank=True)
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='Male')
-    whereabouts = models.CharField(max_length=20, default='OUT', choices=WHEREABOUTS_CHOICES)
-    fingerprint_id = models.CharField(max_length=20, null=True, blank=True)
-    backup_fingerprint_id = models.CharField(max_length=20, null=True, blank=True)
-    password = models.CharField(max_length=128, default='')  # if not using Django auth
+    # ================= EDUCATION =================
+    bs_degree = models.CharField(max_length=255, blank=True, null=True)
+    masters_degree = models.CharField(max_length=255, blank=True, null=True)
+    doctorate_degree = models.CharField(max_length=255, blank=True, null=True)
+    eligibility_type = models.CharField(max_length=255, blank=True, null=True)
 
-    contract_of_service = models.CharField(max_length=100, blank=True, null=True)
-    rank = models.CharField(max_length=100, blank=True, null=True)
-    month = models.CharField(max_length=20, blank=True, null=True)
-    date = models.PositiveIntegerField(blank=True, null=True)
-    year = models.PositiveIntegerField(blank=True, null=True)
-    teaching_workload = models.PositiveIntegerField(blank=True, null=True)
+    # ================= CONTACT =================
+    email = models.EmailField(unique=True, null=True)
+    contact_info = models.CharField(max_length=20, blank=True, null=True)
 
-    # ---Contact info ---
-    contact_no = models.CharField(max_length=20, blank=True, null=True)
-    email = models.EmailField(max_length=255, blank=True, null=True)
+    # ================= FILE =================
+    profile_pic = models.ImageField(upload_to="instructors/%Y/%m/%d/", blank=True, null=True)
 
-    # --- Education Fields ---
-    bs_degree = models.CharField(max_length=150, blank=True, null=True)
-    bs_school = models.CharField(max_length=150, blank=True, null=True)
-    bs_units = models.CharField(max_length=50, blank=True, null=True)
-    masters_degree = models.CharField(max_length=150, blank=True, null=True)
-    masters_school = models.CharField(max_length=150, blank=True, null=True)
-    doctorate_degree = models.CharField(max_length=150, blank=True, null=True)
-    doctorate_school = models.CharField(max_length=150, blank=True, null=True)
+    # ================= BIOMETRICS =================
+    main_id = models.CharField(max_length=100, blank=True, null=True)
+    backup_id = models.CharField(max_length=100, blank=True, null=True)
+    extra_id = models.CharField(max_length=100, blank=True, null=True)
+    link_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
 
-    # --- Other Info ---
-    field_specialization = models.CharField(max_length=10, blank=True, null=True)  # Yes/No
-    eligibility_type = models.CharField(max_length=150, blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-
-class StatusofEmployment(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
-class AcademicalRank(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Designation(models.Model):
-    name = models.CharField(max_length=255)
-    rank = models.PositiveIntegerField(default=999)  # smaller = higher priority
-
-    def __str__(self):
-        return f"{self.name} (rank {self.rank})"
-
-
-     
-class TimeRecord(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    time_in = models.DateTimeField(null=True, blank=True)
-    time_out = models.DateTimeField(null=True, blank=True)
-
-
-class DailyTimeRecords(models.Model):
-    image = models.ImageField(upload_to='profile_pics', null=True, blank=True)
-    name = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.name
-
-class OrgChartList(models.Model):
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, null=True, blank=True)
-    role = models.CharField(max_length=100, null=True, blank=True)
-    title = models.TextField(blank=True)
-    position_dcs = models.OneToOneField('PositionDCS', on_delete=models.CASCADE, blank=True, null=True)
-
-    @property
-    def name(self):
-        if self.employee:
-            return f"{self.employee.first_name} {self.employee.last_name}"
-        return "No Employee Assigned"
-
-    @property
-    def profile(self):
-        if self.employee:
-            return self.employee.profile.url if self.employee.profile else None
-        return None
-
-    def __str__(self):
-        return self.name
-
-
-    
-class PositionDCS(models.Model):
-    positions = models.CharField(max_length=200, null=True, blank=True)
-
-    def __str__(self):
-        return self.positions
-
-class Post(models.Model):
-    author = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255, null=True, blank=True)
-    body = models.TextField(blank=True, null=True)
-    video = models.FileField(upload_to='videos/', blank=True, null=True)
-    file = models.FileField(upload_to='files/', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_pinned = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ['-is_pinned', '-created_at']  
-
-    def __str__(self):
-        if self.title:
-            return f"{self.author.first_name} - {self.title}"
-        return f"{self.author.first_name} - {self.body[:30]}"
-    
-class PostImage(models.Model):
-    post = models.ForeignKey(
-        Post,
-        related_name='images',
-        on_delete=models.CASCADE
+    # ================= SYSTEM =================
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
     )
-    image = models.ImageField(upload_to='posts/')    
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    
+    # Account settings
+    email_confirmed = models.BooleanField(default=False)
+    two_factor_enabled = models.BooleanField(default=False)
+    reset_token = models.CharField(max_length=20, blank=True, null=True)
+    is_activated = models.BooleanField(default=False)
+    activation_token = models.CharField(max_length=20, blank=True, null=True)
 
+    # Staff & superuser defaults
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    is_masteradmin = models.BooleanField(default=True)
+    
+    # Fix reverse accessor clashes
+    groups = models.ManyToManyField(
+        Group,
+        related_name="customuser_set",
+        blank=True,
+        help_text="The groups this user belongs to.",
+        verbose_name="groups",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name="customuser_permissions_set",
+        blank=True,
+        help_text="Specific permissions for this user.",
+        verbose_name="user permissions",
+    )
 
-class SuperUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.username} ({self.first_name} {self.last_name})"
+    
+class Comlab(models.Model):
+    comlab = models.CharField(max_length=150)  # Laboratory Name
+    location = models.CharField(max_length=255)
+    cards = models.ImageField(upload_to='comlabs/', blank=True, null=True)
 
+    # ✅ Upload tracking
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='comlab_uploaded'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-class Equipment(models.Model):
+    # ✅ Update tracking
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='comlab_updated'
+    )
+    updated_at = models.DateTimeField(auto_now=True)       
+
+    def __str__(self):
+        return self.comlab
+    
+class EquipmentBorrow(models.Model):
     STATUS_CHOICES = [
         ('borrowed', 'Borrowed'),
         ('returned', 'Returned'),
     ]
 
-    name = models.CharField(max_length=100)
-    equipment = models.CharField(max_length=100)
-    date = models.DateTimeField()
+    name = models.CharField(max_length=255, verbose_name="Borrower Name")
+    date = models.DateField(verbose_name="Date")
+    time = models.TimeField(verbose_name="Time")
+    equipment = models.CharField(max_length=255, verbose_name="Equipment")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='borrowed')
 
-    def __str__(self):
-        return self.name
-
-class Comlab(models.Model):
-    cards = models.ImageField(upload_to='profile_pics', null=True, blank=True)
-    comlab = models.CharField(max_length=50, null=True, blank=True)
-
-    def __str__(self):
-        return self.comlab
-    
-class Availability(models.Model):
-    STATUS_CHOICES = (
-        ('In', 'In'),
-        ('Out', 'Out'),
-        ('On Class', 'On Class'),
-        ('On Break', 'On Break'),
-        ('On Leave', 'On Leave'),
-        ('Absent', 'Absent'),
+    # ✅ Upload tracking
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='equipment_uploaded'
     )
-    name = models.CharField(max_length=50)
-    status = models.CharField(max_length=20,  default='', choices=STATUS_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ✅ Update tracking
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='equipment_updated'
+    )
+    updated_at = models.DateTimeField(auto_now=True)     
 
     def __str__(self):
-        return self.name
-
-
-class Instructor(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    profile = models.ImageField(upload_to='profiles/', blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.name} - {self.equipment} ({self.status})"
     
-class Subject_Code(models.Model):
-    subjectcodes = models.CharField(max_length=50)
-    def __str__(self):
-        return f"{self.subjectcodes}"
-
-class Subject_Title(models.Model):
-    subjecttitles = models.CharField(max_length=50)
-    def __str__(self):
-        return f"{self.subjecttitles}"
-
-class Course_Year_Section(models.Model):
-    courseyearsections = models.CharField(max_length=50)
-    def __str__(self):
-        return f"{self.courseyearsections}"
-
-class Ins_Schedule(models.Model):
-    instructor = models.ForeignKey(Employee,on_delete=models.CASCADE,to_field='idNum',blank=True,null=True)
-    subject_code = models.ForeignKey(Subject_Code,on_delete=models.CASCADE, blank=True,null=True)
-    subject_title = models.ForeignKey(Subject_Title,on_delete=models.CASCADE, blank=True,null=True)
-    course_year_section = models.ForeignKey(Course_Year_Section,on_delete=models.CASCADE, blank=True,null=True)
-    lecture = models.CharField(max_length=100, default='N/A')
-    laboratory = models.CharField(max_length=50, default='N/A')
-    number_student = models.CharField(max_length=50, default='N/A')
-    room = models.CharField(max_length=50, default='N/A')
-
-    def __str__(self):
-        return f"{self.subject_code} - {self.subject_title}"
-
-    
-        
-class PersonalInfo(models.Model):
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE,null=True, blank=True)
-    full_name = models.CharField(max_length=255)
-    address = models.TextField(null=True, blank=True)
-    birthday = models.DateField(null=True, blank=True)
-    age = models.IntegerField(null=True, blank=True)
-    contact_number = models.CharField(max_length=20)
-    email = models.EmailField(null=True, blank=True)
-    position = models.CharField(max_length=100)
-    experience = models.TextField(null=True, blank=True)
-    education = models.TextField(null=True, blank=True)
-    skills = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return self.full_name
-
-class ComlabReport(models.Model):
-    name = models.CharField(max_length=100)
+class Report(models.Model):
+    name = models.CharField(max_length=255)
     date = models.DateField()
     time = models.TimeField()
     report = models.TextField()
-    attachment = models.FileField(upload_to='comlab_reports/', blank=True, null=True)
+    attachment = models.FileField(upload_to='reports/', blank=True, null=True)
+
+    # ✅ Upload tracking
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='reports_uploaded'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ✅ Update tracking
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reports_updated'
+    )
+    last_updated = models.DateTimeField(auto_now=True) 
 
     def __str__(self):
-        return f"{self.name} - {self.date} {self.time}"
+        return f"{self.name} - {self.date}"
+    
+
+class Post(models.Model):
+    body = models.TextField()
+    image = models.ImageField(upload_to='posts/', blank=True, null=True)
+    is_private = models.BooleanField(default=False)
+    is_pinned = models.BooleanField(default=False)
+    is_announcement = models.BooleanField(default=False)
+    likes = models.ManyToManyField("CustomUser", related_name="post_likes", blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+
+    # ✅ Upload tracking
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='news_uploaded'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ✅ Update tracking
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='news_updated'
+    )
+    updated_at = models.DateTimeField(auto_now=True)     
+
+    def __str__(self):
+        return self.body[:50]
+    
+class Comment(models.Model):
+    post = models.ForeignKey("Post", on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # ✅ FIX
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.body[:20]}"
+    
+class FingerprintCommand(models.Model):
+    CMD_CHOICES = [
+        ("ENROLL", "Enroll"),
+        ("VERIFY", "Verify"),
+        ("DELETE_ALL", "Delete All"),
+    ]
+    
+    cmd = models.CharField(max_length=20, choices=CMD_CHOICES)
+    random_id = models.CharField(max_length=20, blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    processed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.cmd} ({'done' if self.processed else 'pending'})"
+
+class Fingerprint(models.Model):
+    user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name="fingerprint",
+        null=True
+    )
+
+    main_id = models.PositiveIntegerField(unique=True, null=True)
+    backup_id = models.PositiveIntegerField(unique=True, null=True)
+    extra_id = models.PositiveIntegerField(unique=True, null=True)
+
+    random_id = models.CharField(max_length=20, unique=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - FP({self.main_id})"
+    
+from django.db import models
+
+from django.db import models
+from django.utils import timezone
+
+class FingerprintLogs(models.Model):
+    FINGERPRINT_TYPES = [
+        ("info", "Info"),
+        ("raw", "Raw"),
+        ("status", "Status"),
+        ("json", "JSON"),
+        ("error", "Error"),
+    ]
+
+    message = models.TextField()
+    log_type = models.CharField(max_length=20, choices=FINGERPRINT_TYPES, default="info")
+    fingerprint_id = models.IntegerField(null=True, blank=True)
+    timestamp = models.DateTimeField(null=True)
+    extra_data = models.JSONField(default=dict, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    command_id = models.IntegerField(null=True)
+
+    def __str__(self):
+        return f"[{self.log_type}] {self.message[:50]}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # save the new log first
+
+        MAX_LOGS = 1000
+        # Count total entries
+        total_logs = FingerprintLogs.objects.count()
+        if total_logs > MAX_LOGS:
+            # Delete the oldest logs to maintain the limit
+            excess = total_logs - MAX_LOGS
+            oldest_logs = FingerprintLogs.objects.order_by("created_at")[:excess]
+            FingerprintLogs.objects.filter(id__in=[log.id for log in oldest_logs]).delete()
+
+def save(self, *args, **kwargs):
+    if not self.id:
+        self.id = str(uuid.uuid4())
+    if not self.random_id:
+        import random, string
+        self.random_id = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+    super().save(*args, **kwargs)
+    
+class UserBiometric(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+
+    # placeholder for fingerprint/biometric template
+    fingerprint_template = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Biometric - {self.user.username}"
+        
+class Classroom(models.Model):
+    name = models.CharField(max_length=100)
+    room_code = models.CharField(max_length=20, unique=True)
+    capacity = models.IntegerField()
+    description = models.TextField(blank=True, null=True)
+    instructor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    # ✅ Upload tracking
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='classroom_uploaded'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ✅ Update tracking
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='classroom_updated'
+    )
+    updated_at = models.DateTimeField(auto_now=True)    
+
+    def __str__(self):
+        return self.name
+
+
+class ClassroomSchedule(models.Model):
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
+    subject = models.CharField(max_length=100)
+    instructor = models.CharField(max_length=100)
+
+    day = models.CharField(max_length=20)  # Monday, Tuesday, etc.
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    # ✅ Upload tracking
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='classroomsched_uploaded'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ✅ Update tracking
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='classroomsched_updated'
+    )
+    updated_at = models.DateTimeField(auto_now=True)    
+
+    def __str__(self):
+        return f"{self.classroom.name} - {self.day}"
+    
+class Course(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    # ✅ Upload tracking
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='course_uploaded'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ✅ Update tracking
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='course_updated'
+    )
+    updated_at = models.DateTimeField(auto_now=True)       
+
+    def __str__(self):
+        return self.name    
+    
+class Subjects(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True, null=True)
+    course = models.ForeignKey(
+        "Course",
+        on_delete=models.CASCADE,
+        related_name="subjectcourse",
+        null=True
+    )
+
+    # ✅ Upload tracking
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='subject_uploaded'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # ✅ Update tracking
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='subject_updated'
+    )
+    updated_at = models.DateTimeField(auto_now=True)       
+
+    def __str__(self):
+        return self.name
+    
+class Schedule(models.Model):
+    DAYS = [
+        ("Monday", "Monday"),
+        ("Tuesday", "Tuesday"),
+        ("Wednesday", "Wednesday"),
+        ("Thursday", "Thursday"),
+        ("Friday", "Friday"),
+        ("Saturday", "Saturday"),
+        ("Sunday", "Sunday"),
+    ]
+
+    instructor = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.CASCADE,
+        related_name="dschedules"
+    )
+
+    subject = models.ForeignKey(
+        "Subjects",
+        on_delete=models.CASCADE,
+        related_name="dschedules"
+    )
+
+    room = models.ForeignKey(
+        "Classroom",
+        on_delete=models.CASCADE,
+        related_name="classroom_schedules",
+        null=True,
+        blank=True
+    )
+
+    comlab = models.ForeignKey(
+        "ComLab",
+        on_delete=models.CASCADE,
+        related_name="classroom_schedules",
+        null=True,
+        blank=True
+    )
+
+    room_type = models.CharField(max_length=100, blank=True, null=True)
+
+    section = models.CharField(max_length=100, blank=True, null=True)
+
+    day = models.CharField(max_length=10, choices=DAYS)
+
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["day", "start_time"]
+
+    def __str__(self):
+        return f"{self.subject} - {self.day} ({self.start_time} - {self.end_time})"
+    
+
+class Attendance(models.Model):
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.now)
+
+    time_in = models.DateTimeField(null=True, blank=True)
+    time_out = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.date}"

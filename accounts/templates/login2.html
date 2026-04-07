@@ -2,49 +2,178 @@
 {% load static %}
 
 {% block content %}
-<div class="login-container">
-  <section id="login">
-    <img src="{% static 'image/logoams.png' %}" alt="Logo">
-    <h1>OMSUFB - From Accounts</h1>
-    <hr>
-    {% if error %}
-    <p style="color:red;">{{ error }}</p>
-    {% endif %}
-    <!-- USER LOGIN -->
-    <div id="user-login" class="login-form">
-        <form method="POST" action="" autocomplete="on">
-        {% csrf_token %}
-        <input type="text" name="username" placeholder="ID Number" required autofocus>
-        <input type="password" name="password" id="password" placeholder="Password" required>
-        <div class="caps-warning" id="capsUser">Caps Lock is ON</div>
-        <div class="show-password">
-            <input type="checkbox" onclick="togglePasswordVisibility('user-password', this)">
-            <label>Show Password</label>
+
+<div class="min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-green-950 via-green-800 to-green-600">
+
+  <!-- Left Branding / Image -->
+  <div class="hidden md:flex flex-1 items-center justify-center bg-green-900 p-12">
+    <div class="text-center space-y-6">
+
+      <div class="md:flex flex-1 items-center justify-center bg-green-900 p-12">
+        <div class="text-center space-y-6">
+
+          <!-- Logo -->
+          <div class="bg-white p-4 rounded-full shadow-lg inline-block">
+            <img src="{% static 'image/logoams.png' %}" alt="Logo" class="h-20 w-20 object-contain rounded-full">
+          </div>
+
+          <!-- Title -->
+          <h1 class="text-4xl font-bold text-white">Welcome to OMSUFB Portal</h1>
+
+          <!-- Description -->
+          <p class="text-green-200 text-lg max-w-md mx-auto">
+            Access campus services, news, announcements, and university resources securely through your account.
+          </p>
+
+          <!-- NEW: Navigation Links -->
+          <div class="flex flex-col gap-3 mt-6 items-center">
+
+            <a href="{% url 'org' %}" 
+              class="w-64 px-6 py-2 bg-white text-green-900 font-medium rounded-lg shadow hover:bg-green-100 transition">
+              Organizational Chart
+            </a>
+
+            <a href="{% url 'news' %}" 
+              class="w-64 px-6 py-2 bg-white text-green-900 font-medium rounded-lg shadow hover:bg-green-100 transition">
+              News & Announcements
+            </a>
+
+            <a href="{% url '404' %}" 
+              class="w-64 px-6 py-2 bg-white text-green-900 font-medium rounded-lg shadow hover:bg-green-100 transition">
+              Teacher Schedule
+            </a>
+
+          </div>
+
         </div>
-        <button type="submit">Sign In</button>
-        </form>
+      </div>      
     </div>
-    <a href="{% url 'index' %}">Go to Home</a>
-  </section>
+  </div>
+
+  <!-- Login Form -->
+  <div class="flex-1 flex items-center justify-center p-8">
+    <div class="w-full max-w-md bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl p-10">
+
+      <div class="flex justify-center mb-6">
+        <div class="bg-white p-2 rounded-full shadow-md">
+          <img src="{% static 'image/logoams.png' %}" alt="Logo" class="h-16 w-16 object-contain rounded-full">
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold text-gray-800 mb-1 text-center">OMSUFB Portal</h2>
+      <p class="text-gray-600 text-center mb-6">Sign in to your account</p>
+
+      {% if error %}
+      <p class="text-red-500 text-sm mb-3 text-center">{{ error }}</p>
+      {% endif %}
+
+      <form method="POST" action="" autocomplete="on" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Username -->
+        <input 
+          type="text" 
+          name="username" 
+          placeholder="ID Number" 
+          required autofocus
+          class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none transition"
+        >
+
+        <!-- Password -->
+        <div class="relative">
+          <input 
+            type="password" 
+            name="password" 
+            id="user-password" 
+            placeholder="Password" 
+            required
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 outline-none transition"
+          >
+          <!-- Eye icon -->
+          <button type="button" 
+                  onclick="togglePasswordVisibility('user-password', this)" 
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+            <!-- Heroicons Eye / Eye Off -->
+            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Caps Lock -->
+        <div id="capsUser" class="hidden text-red-500 text-sm animate-pulse">
+          Caps Lock is ON
+        </div>
+
+        <!-- Remember me -->
+        <div class="flex items-center justify-between text-sm text-gray-600">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="w-4 h-4 rounded border-gray-300 focus:ring-2 focus:ring-green-500">
+            Remember me
+          </label>
+          <a href="#" class="hover:underline text-green-700">Forgot password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-500 transition shadow-md">
+          Sign In
+        </button>
+
+      </form>
+
+      <!-- <div class="mt-6 text-center">
+        <a href="{% url 'index' %}" class="text-green-700 hover:underline text-sm">
+          ← Back to Home
+        </a>
+      </div> -->
+
+    </div>
+  </div>
+
 </div>
 
 <script>
+  function togglePasswordVisibility(fieldId, button) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById('eyeIcon');
 
-function togglePasswordVisibility(fieldId, checkbox) {
-  const field = document.getElementById(fieldId);
-  field.type = checkbox.checked ? 'text' : 'password';
-}
+    if(field.type === 'password'){
+      field.type = 'text';
+      // Switch to Eye Off icon
+      icon.innerHTML = `
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.05 10.05 0 012.715-4.045M9.88 9.88a3 3 0 104.24 4.24M3 3l18 18"/>
+      `;
+    } else {
+      field.type = 'password';
+      // Switch back to Eye icon
+      icon.innerHTML = `
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      `;
+    }
+  }
 
-function detectCapsLock(fieldId, warningId) {
-  const field = document.getElementById(fieldId);
-  const warning = document.getElementById(warningId);
-  if(!field || !warning) return;
-  field.addEventListener('keydown', function(e){
-    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
-  });
-  field.addEventListener('keyup', function(e){
-    warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
-  });
-}
+  // Caps lock detection
+  function detectCapsLock(fieldId, warningId) {
+    const field = document.getElementById(fieldId);
+    const warning = document.getElementById(warningId);
+    if(!field || !warning) return;
+
+    field.addEventListener('keydown', (e) => {
+      warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+    });
+    field.addEventListener('keyup', (e) => {
+      warning.style.display = e.getModifierState('CapsLock') ? 'block' : 'none';
+    });
+  }
+
+  detectCapsLock('user-password', 'capsUser');
 </script>
+
 {% endblock %}

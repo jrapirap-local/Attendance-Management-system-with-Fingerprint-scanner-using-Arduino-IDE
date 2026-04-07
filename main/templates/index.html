@@ -1,118 +1,415 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMSUFB Portal</title>
 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>  
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
     <style>
-        body{
-          background: linear-gradient(135deg, #001a00, #004d00, #007f00);
-          color: rgba(41, 40, 40, 1);
-          font-family: system-ui, -apple-system, "Segoe UI", Roboto,
-                      Helvetica, Arial, sans-serif;
-          font-size: 16px;
-          line-height: 1.6;
-          color: #222;
-          margin:0;
-          padding:0;
+        /* Custom scan line animation */
+        @keyframes scan {
+            0% { transform: translateY(-80px); opacity: 0; }
+            25% { opacity: 0.7; }
+            50% { transform: translateY(0); opacity: 1; }
+            75% { opacity: 0.7; }
+            100% { transform: translateY(80px); opacity: 0; }
         }
 
-        /* Landing section */
-        #landing{
-            flex:1;
-            background:rgba(255,255,255,1);
-            backdrop-filter:blur(10px);
-            border-radius:20px;
-            box-shadow:0 15px 40px rgba(0,0,0,0.6);
-            text-align:center;
+        .animate-scan {
+            animation: scan 2s linear infinite;
+        }
+
+        #clock {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.15em;
+            text-shadow: 
+                0 0 6px #22c55e,
+                0 0 12px #22c55e,
+                0 0 24px #22c55e;
+        }
+
+        /* Glass effect boost */
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+        }
+
+        /* Subtle hover (feels premium) */
+        button:hover {
+            transform: translateY(-1px);
         } 
 
-        /* Navigation bar */
-        header{
-            background:#333;
-            color:white;
-            padding:15px 40px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
+        button.active-in {
+            color: #22c55e;
+            border-color: #22c55e;
         }
 
-        nav a{
-            color:white;
-            margin-left:20px;
-            text-decoration:none;
+        button.active-out {
+            color: #ef4444;
+            border-color: #ef4444;
         }
-
-        nav a:hover{
-            color:#00bfff;
-        }
-
-        .hero{
-            width: 100%;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background: white;
-            flex-direction: column;
-        }
-
-        .hero h1{
-            font-size:40px;
-        }
-
-        .hero p{
-            font-size:18px;
-            color:#555;
-        }
-
-        .btn{
-            display:inline-block;
-            margin-top:20px;
-            padding:12px 25px;
-            background:#007BFF;
-            color:white;
-            text-decoration:none;
-            border-radius:5px;
-        }
-
-        /* Footer */
-        footer{
-            background:#333;
-            color:white;
-            text-align:center;
-            padding:15px;
-        }
-    </style>
+    </style> 
 </head>
 
-<body>
-<div id="landing">
-  <header>
-      <h2>OMSUFB</h2>
+<body class="bg-gray-100 font-sans">
 
-      <nav>
-          <a href="#">Home</a>
-          <a href="{% url 'news' %}">News</a>
-          <a href="#">Organizational Chart</a>
-          <a href="#">About Us</a>
-          <a href="{% url 'login' %}">Login</a>
-      </nav>
-  </header>
+<div class="pt-5 min-h-screen bg-gradient-to-b from-green-950 to-green-800 flex flex-col items-center text-white px-4">
 
-  <section class="hero">
-      <h1>Welcome to My Website</h1>
-      <p>This is a simple landing page built with HTML.</p>
-      <a href="{% url 'login' %}" class="btn">Get Started</a>
-  </section>
+    <!-- ACTION BUTTONS (OUTSIDE CARD) -->
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 p-5">
+        <button id="timeInBtn"
+            class="px-6 py-2 text-green-300 border-b-2 border-green-500 hover:text-white hover:border-green-300 transition font-semibold tracking-wide">
+            Time In
+        </button>
 
-  <footer>
-      <p>© 2026 My Website</p>
-  </footer>
+        <button id="timeOutBtn"
+            class="px-6 py-2 text-red-300 border-b-2 border-red-500 hover:text-white hover:border-red-300 transition font-semibold tracking-wide">
+            Time Out
+        </button>
+    </div>
+
+    <!-- DIGITAL CLOCK -->
+    <div class="text-center mb-5">
+        <p id="clock" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-mono font-bold tracking-[0.2em] bg-black px-6 sm:px-10 py-3 sm:py-4 rounded-xl shadow-inner border border-green-400 text-green-400"></p>
+        <p id="date" class="mt-2 text-green-200 text-xs sm:text-sm md:text-base tracking-wide"></p>
+    </div>
+
+    <!-- MODE -->
+    <p id="modeText" class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 font-bold text-green-200 tracking-widest text-center">
+        Select Mode
+    </p>  
+
+    <!-- CARD -->
+    <div class="bg-white/10 glass rounded-3xl p-6 sm:p-10 shadow-2xl border border-white/20 w-full sm:w-4/5 md:w-1/2 lg:w-1/3 flex flex-col items-center text-center mx-auto">
+
+        <!-- PROFILE (CENTERED + SCALABLE) -->
+        <div class="flex flex-col items-center">
+
+            <div class="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 rounded-full overflow-hidden border-4 border-green-400 shadow-xl">
+                <img id="userImage"
+                    src="{% static 'image/maleSil.jpg' %}"
+                    class="w-full h-full object-cover">
+            </div>
+
+            <!-- NAME (EMPHASIZED & SCALABLE) -->
+            <p id="userName" class="mt-4 sm:mt-6 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-wide">
+                Idle
+            </p>
+
+            <p class="text-green-200 mt-1 sm:mt-2 text-xs sm:text-sm md:text-base tracking-wider">
+                BIOMETRIC IDENTIFICATION
+            </p>
+
+        </div>
+
+        <!-- DIVIDER -->
+        <div class="w-full h-px bg-white/20 my-6 sm:my-8"></div>
+
+        <!-- SCANNER (SECONDARY) -->
+        <div class="flex flex-col items-center">
+
+            <div class="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center mb-2 sm:mb-3">
+
+                <span class="absolute w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-400 opacity-20 animate-ping"></span>
+
+                <img src="{% static 'image/fingerprint-scan.png' %}"
+                    class="w-16 h-16 sm:w-20 sm:h-20 object-contain relative z-10"/>
+
+                <span id="scanLine"
+                    class="absolute w-32 sm:w-36 h-1 bg-green-300 rounded-full animate-scan">
+                </span>
+            </div>
+
+            <!-- STATUS -->
+            <p id="statusText" class="text-sm sm:text-base md:text-lg text-green-200">
+                Ready to scan
+            </p>
+
+        </div>
+
+    </div>
 
 </div>
 
+<script>
+    let scannerState = "idle"; 
+    // idle | scanning | processing | success | error
+
+    let fetchLogsInterval = null;
+    let lastLogMessage = "";
+    let logUpdateTimeout = null;
+    let currentMatchID = null;
+    let attendanceMode = null; 
+
+    const timeInBtn = document.getElementById("timeInBtn");
+    const timeOutBtn = document.getElementById("timeOutBtn");  
+    
+    timeInBtn.addEventListener("click", () => {
+        attendanceMode = "time_in";
+        setActiveButton("time_in");
+        modeText.textContent = "Time In";
+    });
+
+    timeOutBtn.addEventListener("click", () => {
+        attendanceMode = "time_out";
+        setActiveButton("time_out");
+        modeText.textContent = "Time Out";
+    });    
+    
+    function setActiveButton(active) {
+        timeInBtn.classList.remove("active-in");
+        timeOutBtn.classList.remove("active-out");
+
+        if (active === "time_in") {
+            timeInBtn.classList.add("active-in");
+        } else if (active === "time_out") {
+            timeOutBtn.classList.add("active-out");
+        }
+    }
+
+    function getCSRFToken() {
+        return document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='))
+            ?.split('=')[1];
+    }  
+
+    function startScanner() {
+        console.log("Scanner started");
+        if (fetchLogsInterval) return;
+
+        scannerState = "scanning";
+        updateUIState();
+
+        fetchLogsInterval = setInterval(fetchLogs, 100);
+    }
+
+    function stopScanner() {
+        if (fetchLogsInterval) {
+            clearInterval(fetchLogsInterval);
+            fetchLogsInterval = null;
+        }
+    }
+
+    async function fetchLogs() {
+        try {
+            const res = await fetch("/api/fingerprint/get/logs/");
+            const data = await res.json();
+
+            const latestLog = data.logs?.at(-1);
+            if (!latestLog) return;
+
+            let parsedMessage = null;
+
+            try {
+                parsedMessage = JSON.parse(latestLog.message);
+            } catch (e) {
+                console.error("Invalid JSON:", e);
+                return;
+            }
+
+            // ✅ Check type INSIDE parsed message
+            if (parsedMessage.type !== "verify") return;
+            console.log("parsed: " + parsedMessage.log_msg + " ID: " + data.logs?.[0].id);
+            if(Number.isInteger(parsedMessage.log_msg)){
+                const res3 = await fetch(`/instructor-profile-fp/${parsedMessage.log_msg}?mode=${0}`);
+                const data3 = await res3.json();  
+                console.log(data3);
+            }
+        
+
+            const latest = parsedMessage.log_msg;
+
+            // ✅ Use string comparison instead
+            const latestStr = JSON.stringify(latest);
+            if (!latest || latestStr === lastLogMessage) return;
+
+            // ✅ Update backend
+            const res2 = await fetch(
+                `/api/fingerprint/get/logs/update/${data.logs?.[0].id}/`,
+                { method: "POST" }
+            );
+
+            lastLogMessage = latestStr;
+
+            // Update UI
+            console.log("test: " + latest);
+            updateStatus(latest);
+
+            // ✅ SUCCESS CASE
+            if (latest.match_id !== undefined) {
+                if (latest.match_id <= 0) {
+                    statusText.textContent = "Fingerprint not recognized. Please try again.";
+                    return;
+                }
+
+                handleFingerprint(latest.match_id);
+                return;
+            }
+
+            const msg = latest.log_msg?.toLowerCase() || "";
+
+            // ⚠️ ERROR CASE
+            if (msg.includes("not match") || msg.includes("failed")) {
+                scannerState = "error";
+                updateUIState();
+
+                setTimeout(() => {
+                    scannerState = "scanning";
+                    updateUIState();
+                }, 3000);
+
+                return;
+            }
+
+            // 🔄 PROCESS STATES
+            if (msg.includes("place finger")) {
+                scannerState = "scanning";
+            } else if (msg.includes("remove finger")) {
+                scannerState = "processing";
+            }
+
+            updateUIState();
+
+        } catch (err) {
+            console.error("Fetch error:", err);
+        }
+    } 
+    
+    function updateUIState() {
+        const status = document.getElementById("statusText");
+        const scanLine = document.getElementById("scanLine");
+
+        switch (scannerState) {
+            case "idle":
+                status.textContent = "Ready to scan";
+                status.className = "text-green-200";
+                scanLine.style.opacity = "0";
+                break;
+
+            case "scanning":
+                status.textContent = "Place finger on scanner";
+                status.className = "text-green-300";
+                scanLine.style.opacity = "1";
+                break;
+
+            case "processing":
+                status.textContent = "Processing...";
+                status.className = "text-yellow-300";
+                break;
+
+            case "success":
+                status.textContent = "Verified ✔";
+                status.className = "text-green-400 font-bold";
+                stopScanner();
+                break;
+        }
+    }
+
+    async function handleFingerprint(match_id) {
+        if (!attendanceMode) {
+            statusText.textContent = "Please select Time In or Time Out first ⚠";
+            return;
+        }
+
+        const res = await fetch(`/instructor-profile-fp/${match_id}?mode=${attendanceMode}`);
+        const data = await res.json();
+
+        if (data.success) {
+            userName.textContent = data.user.name;
+            userImage.src = data.user.image;
+
+            if (attendanceMode === "time_in") {
+                statusText.textContent = "Time In: " + data.time;
+            } else if (attendanceMode === "time_out") {
+                statusText.textContent = "Time Out: " + data.time;
+            }
+
+            scannerState = "success";
+            updateUIState();
+
+            // 👀 DO NOT reset mode
+            setTimeout(() => {
+                resetScanner();  // optional: just resets UI, not mode
+                startScanner();
+            }, 2000);
+
+        } else {
+            statusText.textContent = data.message || "User not recognized";
+        }
+    }
+
+    function resetScanner() {
+        stopScanner();
+
+        scannerState = "idle";
+        lastLogMessage = "";
+
+        document.getElementById("userName").textContent = "Waiting for user...";
+        document.getElementById("userImage").src = "{% static 'image/malesil.jpg' %}";
+
+        updateUIState();
+    }    
+
+    window.addEventListener("load", () => {
+        startScanner();
+    });
+
+    function updateStatus(message) {
+        statusText.textContent = message;
+    }
+
+    function extractJSON(log) {
+        try {
+            // Case 1: pure JSON
+            return JSON.parse(log);
+        } catch {
+            // Case 2: JSON inside text
+            const match = log.match(/\{.*\}/);
+            if (!match) return null;
+
+            try {
+            return JSON.parse(match[0]);
+            } catch {
+            return null;
+            }
+        }
+    }
+
+    function isValidFingerprint(data) {
+        return data && data.main && data.backup && data.extra;
+    }
+
+    window.addEventListener("beforeunload", () => {
+        if (fetchLogsInterval) clearInterval(fetchLogsInterval);
+    });
+
+    function updateClock() {
+        const now = new Date();
+
+        document.getElementById("clock").textContent =
+            now.toLocaleTimeString();
+
+        document.getElementById("date").textContent =
+            now.toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+</script>
 </body>
 </html>

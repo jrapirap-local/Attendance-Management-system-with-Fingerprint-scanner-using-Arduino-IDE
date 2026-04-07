@@ -1,0 +1,593 @@
+{% extends 'builder.html' %}
+{% load static %}
+{% block page %}student-new{% endblock %}
+{% block content %}
+
+<style>
+  @keyframes scanWave {
+    0% {
+      transform: translateY(-60px);
+      opacity: 0;
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(60px);
+      opacity: 0;
+    }
+  }
+
+  .scanning {
+    animation: scanWave 1.2s linear infinite;
+  }
+</style>
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Student account creation</h1>
+            <p class="text-sm text-gray-500">Create new student account form</p>
+        </div>
+    </div>
+    
+    {% csrf_token %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+      <!-- Left Column: Form -->
+      <form method="post" class="bg-white p-6 rounded-2xl shadow-md space-y-4">
+
+        <!-- First & Last Name -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="first_name" class="block text-sm font-medium text-gray-700">First Name</label>
+            <input type="text" id="first_name" name="first_name" required
+                    class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+          </div>
+          <div>
+            <label for="last_name" class="block text-sm font-medium text-gray-700">Last Name</label>
+            <input type="text" id="last_name" name="last_name" required
+                    class="p-2 -2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+          </div>
+        </div>
+
+        <!-- Middle Name -->
+        <div>
+          <label for="middle_name" class="block text-sm font-medium text-gray-700">Middle Name</label>
+          <input type="text" id="middle_name" name="middle_name"
+                  class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+        </div>
+
+        <!-- Birthday & Age -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="birthday" class="block text-sm font-medium text-gray-700">Birthday</label>
+            <input type="date" id="birthday" name="birthday" required
+                    class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+          </div>
+          <div>
+            <label for="gender" class="block text-sm font-medium text-gray-700">Gender</label>
+            <select id="gender" name="gender" required
+                    class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+              <option value="" disabled selected>Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input type="email" id="email" name="email" required
+                  class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+          </div>
+
+          <div>
+            <label for="contact_no" class="block text-sm font-medium text-gray-700">
+              Contact No.
+            </label>
+            <input type="tel" id="contact_no" name="contact_no" required
+                  placeholder="+63 9XX XXX XXXX"
+                  class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+          </div>
+
+        </div>       
+
+        <!-- Position & Organization -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label for="organization" class="block text-sm font-medium text-gray-700">Organization</label>
+            <select id="organization" name="organization" required
+                    class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+              <option value="Student">Sudent</option>
+            </select>
+          </div>                   
+        </div>
+
+        <!-- File Upload -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Upload Profile Picture</label>
+          <div class="flex items-center space-x-4">
+            <label for="fileUpload"
+                    class="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-500 transition">
+              Choose File
+            </label>
+            <span id="fileName" class="text-gray-500">No file chosen</span>
+          </div>
+          <input type="file" id="fileUpload" name="profile_picture" accept="image/*" class="hidden">
+        </div>
+
+        <!-- Submit Button -->
+        <div>
+          <button type="submit"
+                  id="saveBtn"
+                  disabled
+                  class="w-full bg-gray-400 text-white px-4 py-2 rounded-lg shadow cursor-not-allowed">
+            <span id="saveText">Save Student</span>
+
+            <!-- Spinner (hidden by default) -->
+            <svg id="saveSpinner"
+                class="hidden w-5 h-5 animate-spin"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10"
+                      stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>            
+          </button>
+        </div>
+        <!-- BIOMETRICS DATA -->
+        <input type="text" id="main_id" name="main_id" class="">
+        <input type="text" id="back_id" name="back_id" class="">
+        <input type="text" id="extra_id" name="maiextra_idn_id" class="">
+      </form>
+
+      <!-- Right Column: Biometrics UI -->
+      <div class="flex items-center justify-center" id="biometrics">
+        <div class="w-full h-full bg-white rounded-2xl shadow-md p-8 flex flex-col items-center justify-center space-y-6">
+
+          <h2 class="text-xl font-semibold text-gray-700">Biometrics Registration</h2>
+          <p class="text-sm text-gray-400">Place your finger on the scanner</p>
+
+          <!-- Scanner -->
+          <div class="relative w-40 h-40 flex items-center justify-center">
+
+            <!-- Pulse Glow -->
+            <div id="glow" class="absolute w-40 h-40 rounded-full bg-green-100 opacity-0"></div>
+
+            <!-- Ring -->
+            <div class="absolute w-36 h-36 rounded-full border-4 border-green-500 opacity-60"></div>
+
+            <!-- Fingerprint image -->
+            <img src="{% static 'image/fingerprint-scan.png' %}" alt="Fingerprint"
+                class="w-48 h-48 object-contain relative z-10"/>
+
+            <!-- SCAN WAVE -->
+            <div id="scanLine"
+                class="absolute w-32 h-1 bg-green-500 opacity-0"></div>
+          </div>
+
+          <!-- Status -->
+          <div class="text-center">
+            <p class="text-sm text-gray-500">Status:</p>
+            <p id="statusText" class="text-green-600 font-medium">Ready to Scan</p>           
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex space-x-3">
+            
+            <!-- Start Scan -->
+            <button id="scanBtn"
+                    type="button"
+                    class="px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-500 transition">
+              Start Scan
+            </button>
+
+            <!-- Skip Button -->
+            <button id="skipBtn"
+                    type="button"
+                    class="px-6 py-2 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-400 transition">
+              Skip
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>    
+</main>
+
+<script>  
+// ================= FILE UPLOAD =================
+const fileInput = document.getElementById("fileUpload");
+fileInput.addEventListener("change", function () {
+  const file = this.files[0];
+  const maxSizeMB = 5; // Maximum file size in MB
+
+  if (!file) {
+    document.getElementById("fileName").textContent = "No file chosen";
+    saveBtn.disabled = true;
+    saveBtn.classList.add("bg-gray-400", "cursor-not-allowed");
+    return;
+  }
+
+  const fileSizeMB = file.size / (1024 * 1024);
+  if (fileSizeMB > maxSizeMB) {
+    Swal.fire({
+      icon: "error",
+      title: "File Too Large",
+      text: `Please select an image smaller than ${maxSizeMB} MB. Current size: ${fileSizeMB.toFixed(2)} MB`
+    });
+    this.value = ""; // reset file input
+    document.getElementById("fileName").textContent = "No file chosen";
+    saveBtn.disabled = true;
+    saveBtn.classList.add("bg-gray-400", "cursor-not-allowed");
+    return;
+  }
+
+  document.getElementById("fileName").textContent = file.name;
+
+  // Enable Save button after valid file selection
+  saveBtn.disabled = false;
+  saveBtn.classList.remove("bg-gray-400", "cursor-not-allowed");
+  saveBtn.classList.add("bg-green-600");
+});
+
+// ================= PHONE FIX SAFE =================
+const phone = document.getElementById("contact_no");
+phone?.addEventListener("blur", function () {
+  if (this.value.startsWith("09") && this.value.length === 11) {
+    this.value = "+63" + this.value.substring(1);
+  }
+});
+
+// ================= ELEMENTS =================
+const saveBtn = document.getElementById("saveBtn");
+const scanBtn = document.getElementById("scanBtn");
+const skipBtn = document.getElementById("skipBtn");
+const main_id = document.getElementById("main_id");
+const backup_id = document.getElementById("backup_id");
+const extra_id = document.getElementById("extra_id");
+const statusText = document.getElementById("statusText");
+const saveSpinner = document.getElementById("saveSpinner");
+const scanLine = document.getElementById("scanLine");
+const glow = document.getElementById("glow");
+const progressBar = document.getElementById("progressBar");
+const progressLabel = document.getElementById("progressLabel");
+const progressPercent = document.getElementById("progressPercent");
+const saveText = document.getElementById("saveText");
+
+// ================= STATE =================
+let currentState = "idle";
+let scanTimeout = null;
+let scanSessionId = 0;
+let fetchLogsInterval = null; // Global interval variable
+let tempLogData = {
+  main: null,
+  backup: null,
+  extra: null
+};
+let currentProgress = 0;
+
+
+function enableSave() {
+  saveBtn.disabled = false;
+  saveBtn.classList.remove("bg-gray-400", "cursor-not-allowed");
+  saveBtn.classList.add("bg-green-600", "hover:bg-green-500", "transition");
+}
+
+function setLoading(isLoading) {
+  if (isLoading) {
+    saveBtn.disabled = true;
+    saveBtn.classList.add("opacity-70", "cursor-wait");
+
+    saveText.textContent = "Saving...";
+    saveSpinner.classList.remove("hidden");
+  } else {
+    saveBtn.disabled = false;
+    saveBtn.classList.remove("opacity-70", "cursor-wait");
+
+    saveText.textContent = "Save Student";
+    saveSpinner.classList.add("hidden");
+  }
+}
+
+// Helper to POST to a Django endpoint safely
+async function postToEndpoint(url) {
+    try {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCSRFToken() }
+        });
+        return await res.json();
+    } catch (err) {
+        statusText.textContent = "Server Error ❌";
+        statusText.classList.remove("text-yellow-500", "text-gray-500");
+        statusText.classList.add("text-red-600");
+        Swal.fire({ icon: "error", title: "Error", text: err.toString() });
+        currentState = "idle";
+        return { success: false };
+    }
+} 
+
+// ================= SCAN =================
+scanBtn.addEventListener("click", async () => {
+    // Reset previous fingerprint data
+    window.fingerprintData = "";
+    tempLogData = { main: null, backup: null, extra: null };
+    lastLogMessage = "";  
+
+    // If currently scanning, stop it
+    if (currentState === "scanning") {
+        scanSessionId++;
+        clearTimeout(scanTimeout);
+        scanLine.classList.remove("scanning");
+        glow.classList.remove("animate-pulse");
+
+        // Stop fetching logs
+        if (fetchLogsInterval) {
+            clearInterval(fetchLogsInterval);
+            fetchLogsInterval = null;
+        }
+
+        const data = await postToEndpoint("{% url 'start_verify' %}");
+        if (data.success) {
+            statusText.textContent = "Scan Stopped";
+            statusText.classList.remove("text-yellow-500", "text-red-600");
+            statusText.classList.add("text-gray-500");
+            scanBtn.innerHTML = "Start scan";
+            currentState = "idle";
+        } else {
+            statusText.textContent = "Failed to queue Verify";
+            statusText.classList.remove("text-gray-500", "text-yellow-500");
+            statusText.classList.add("text-red-600");
+        }
+        return;
+    }
+
+    // Start scanning
+    currentState = "scanning";
+    statusText.textContent = "Scanning...";
+    statusText.classList.remove("text-gray-500", "text-red-600");
+    statusText.classList.add("text-yellow-500");
+    scanLine.classList.add("scanning");
+    glow.classList.add("animate-pulse");
+    scanBtn.innerHTML = "Stop scan";
+
+    const data = await postToEndpoint("{% url 'start_enroll' %}");
+    if (data.success) {
+        statusText.textContent = "Waiting for fingerprint...";
+        // Start fetching logs every 300ms
+        if (fetchLogsInterval) clearInterval(fetchLogsInterval);
+        fetchLogsInterval = setInterval(fetchLogs, 300);
+    } else {
+        statusText.textContent = "Failed to queue ENROLL";
+        statusText.classList.remove("text-gray-500", "text-yellow-500");
+        statusText.classList.add("text-red-600");
+        currentState = "idle";
+    }
+});
+
+// ================= SKIP =================
+skipBtn.addEventListener("click", () => {
+  scanSessionId++;
+  clearTimeout(scanTimeout);
+
+  window.fingerprintData = "";
+
+  statusText.textContent = "Biometrics Skipped";
+  statusText.className = "text-green-600";
+  enableSave();
+  scanBtn.disabled = true;
+
+  Swal.fire({
+    icon: "info",
+    title: "Skipped",
+    text: "No fingerprint required"
+  });
+
+  currentState = "skipped";
+});
+
+// ================= FORM SUBMIT =================
+document.querySelector("form").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  setLoading(true);
+
+  const formData = new FormData(this);
+
+  try {
+    const res = await fetch("{% url 'add_student' %}", {
+      method: "POST",
+      body: formData,
+      headers: { "X-CSRFToken": getCSRFToken() }
+    });
+
+    const data = await res.json();
+    setLoading(false);
+
+    if (data.success) {
+      await Swal.fire({
+        icon: "success",
+        title: "Saved!",
+        text: "Student successfully created"
+      });
+
+      // Call verify safely (optional)
+      await postToEndpoint("{% url 'start_verify' %}");
+
+      // Reset form
+      this.reset();
+      document.getElementById("fileName").textContent = "No file chosen";
+
+      // FULL UI RESET
+      resetUI();
+    } else {
+      Swal.fire({ icon: "error", title: "Error", text: data.message });
+    }
+
+  } catch (err) {
+    setLoading(false);
+    Swal.fire({ icon: "error", title: "Server Error", text: err.toString() });
+  }
+});
+
+let lastLogMessage = "";
+let logUpdateTimeout = null;
+
+async function fetchLogs() {
+  try {
+    const response = await fetch("/api/fingerprint/logs/");
+    const data = await response.json();
+
+    const latestLog = data.logs?.[0]?.message || "";
+    if (!latestLog || latestLog === lastLogMessage) return;
+
+    lastLogMessage = latestLog;
+    console.log(latestLog);
+
+    // Default UI update
+    updateStatus(latestLog);
+
+    // ================= JSON EXTRACTION =================
+    const parsed = extractJSON(latestLog);
+
+    if (parsed && isValidFingerprint(parsed)) {
+      handleFingerprintComplete(parsed);
+      return;
+    }
+
+    // ================= DELAY HANDLER =================
+    handleLogDelay(latestLog);
+
+    // ================= FACE-ID STYLE PROGRESS =================
+    // updateScanProgress(latestLog);
+
+  } catch (err) {
+    console.error("Failed to fetch logs:", err);
+  }
+}
+
+function extractJSON(log) {
+  try {
+    // Case 1: pure JSON
+    return JSON.parse(log);
+  } catch {
+    // Case 2: JSON inside text
+    const match = log.match(/\{.*\}/);
+    if (!match) return null;
+
+    try {
+      return JSON.parse(match[0]);
+    } catch {
+      return null;
+    }
+  }
+}
+
+function isValidFingerprint(data) {
+  return data && data.main && data.backup && data.extra;
+}
+
+async function handleFingerprintComplete(parsed) {
+  // Optional hidden inputs
+if (main_id) main_id.value = parsed.main;
+if (backup_id) backup_id.value = parsed.backup;
+if (extra_id) extra_id.value = parsed.extra;
+
+  // UI transition
+  // updateProgress(100, "Completed");
+  statusText.textContent = "Fingerprint Registered ✔";
+  statusText.className = "text-green-600 font-semibold";
+
+  // Stop animations
+  scanLine.classList.remove("scanning");
+  glow.classList.remove("animate-pulse");
+
+  // Stop polling
+  if (fetchLogsInterval) {
+    clearInterval(fetchLogsInterval);
+    fetchLogsInterval = null;
+  }
+
+  // Disable buttons
+  scanBtn.disabled = true;
+  skipBtn.disabled = true;
+  scanBtn.innerHTML = "Completed";
+
+  enableSave();
+
+  currentState = "idle";
+
+  // Optional verify
+  await postToEndpoint("{% url 'start_verify' %}");
+}
+
+function updateStatus(message) {
+  statusText.textContent = message;
+}
+
+function handleLogDelay(message) {
+  if (logUpdateTimeout) clearTimeout(logUpdateTimeout);
+
+  const longDelayMessages = [
+    "Scan complete. Remove finger.",
+    "Fingerprints did not match. Restarting...",
+    "Please wait."
+  ];
+
+  const delay = longDelayMessages.includes(message) ? 5000 : 3000;
+
+  logUpdateTimeout = setTimeout(() => {
+    logUpdateTimeout = null;
+  }, delay);
+}
+
+function resetUI() {
+  // Reset buttons
+  saveBtn.disabled = true;
+  saveBtn.classList.remove("bg-green-600", "hover:bg-green-500");
+  saveBtn.classList.add("bg-gray-400", "cursor-not-allowed");
+
+  scanBtn.disabled = false;
+  scanBtn.innerHTML = "Start Scan";
+  scanBtn.classList.remove("cursor-not-allowed");
+
+  skipBtn.disabled = false;
+  skipBtn.classList.remove("cursor-not-allowed");
+
+  // Reset status
+  statusText.textContent = "Ready to Scan";
+  statusText.className = "text-green-600 font-medium";
+
+  // Stop animations
+  scanLine.classList.remove("scanning");
+  glow.classList.remove("animate-pulse");
+
+  // Reset states
+  currentState = "idle";
+  currentProgress = 0;
+  lastLogMessage = "";
+  window.fingerprintData = "";
+  tempLogData = { main: null, backup: null, extra: null };
+
+  // Stop polling
+  if (fetchLogsInterval) {
+    clearInterval(fetchLogsInterval);
+    fetchLogsInterval = null;
+  }
+}
+
+window.addEventListener("beforeunload", () => {
+  if (fetchLogsInterval) clearInterval(fetchLogsInterval);
+});
+</script>
+{% endblock %}

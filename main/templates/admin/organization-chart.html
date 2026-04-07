@@ -1,0 +1,202 @@
+{% extends 'builder.html' %}
+{% load static %}
+{% block page %}org_chart{% endblock %}
+{% block content %}
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Organization</h1>
+            <p class="text-sm text-gray-500">Chart Tree</p>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2 p-0 bg-white rounded-2xl shadow-sm border">
+        <!-- Horizontal scroll container -->
+        <div class="overflow-x-auto py-4">
+
+            <!-- Top Level: Chair -->
+            <div class="flex flex-col items-center gap-4">
+                {% for dept_chair in dept_chair|slice:":3" %}
+                <div class="flex flex-col items-center bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition w-52">
+
+                    <img src="{% if dept_chair.profile_pic %}{{ dept_chair.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                        class="w-48 h-48 rounded-full object-cover border">
+
+                    <p class="mt-2 text-sm font-medium text-gray-800 text-center leading-tight">
+                        {{ dept_chair.get_full_name|default:dept_chair.username }}
+                    </p>
+
+                    <span class="text-xs text-center text-gray-500">
+                        {{ dept_chair.designation }}
+                    </span>
+
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Top Level: Secretary -->
+            <div class="flex flex-col items-center gap-4">
+                {% for dept_chair_sec in dept_chair_sec|slice:":3" %}
+                <div class="flex flex-col items-center bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition w-28">
+
+                    <img src="{% if dept_chair_sec.profile_pic %}{{ dept_chair_sec.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                        class="w-24 h-24 rounded-full object-cover border">
+
+                    <p class="mt-2 text-sm font-medium text-gray-800 text-center leading-tight">
+                        {{ dept_chair_sec.get_full_name|default:dept_chair_sec.username }}
+                    </p>
+
+                    <span class="text-xs text-center text-gray-500">
+                        {{ dept_chair_sec.designation }}
+                    </span>
+
+                </div>
+                {% endfor %}
+            </div>            
+
+            <!-- Connecting line (optional) -->
+            <div class="flex justify-center m-8">
+                <div class="border-t-2 border-gray-300 w-1/2"></div>
+            </div>
+
+            <!-- Second Level: Instructors and Staff -->
+            <div class="flex justify-center gap-20">
+                <div class="flex justify-center gap-20">
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="flex justify-center">
+                            <div class="grid grid-cols-2 md:grid-cols-2 gap-4 justify-items-center">
+                                {% for it_prog_coo in it_prog_coo|slice:":3" %}
+                                <div class="flex flex-col items-center bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition w-36">
+
+                                    <img src="{% if it_prog_coo.profile_pic %}{{ it_prog_coo.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                                        class="w-32 h-32 rounded-full object-cover border">
+
+                                    <p class="mt-2 text-sm font-medium text-gray-800 text-center leading-tight">
+                                        {{ it_prog_coo.get_full_name|default:it_prog_coo.username }}
+                                    </p>
+
+                                    <span class="text-xs text-center text-gray-500">
+                                        {{ it_prog_coo.designation }}
+                                    </span>
+
+                                </div>
+                                {% endfor %}
+                                
+                                {% for cs_prog_coo in cs_prog_coo|slice:":3" %}
+                                <div class="flex flex-col items-center bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition w-36">
+
+                                    <img src="{% if cs_prog_coo.profile_pic %}{{ cs_prog_coo.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                                        class="w-32 h-32 rounded-full object-cover border">
+
+                                    <p class="mt-2 text-sm font-medium text-gray-800 text-center leading-tight">
+                                        {{ cs_prog_coo.get_full_name|default:cs_prog_coo.username }}
+                                    </p>
+
+                                    <span class="text-xs text-center text-gray-500">
+                                        {{ cs_prog_coo.designation }}
+                                    </span>
+
+                                </div>
+                                {% endfor %}                              
+                            </div>
+                        </div>
+                        <div class="flex justify-center">
+                            <div class="grid grid-cols-3 md:grid-cols-3 gap-4 justify-items-center">
+                                {% for instructor in instructors %}
+                                <div class="flex flex-col items-center bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition w-28">
+
+                                    <img src="{% if instructor.profile_pic %}{{ instructor.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                                        class="w-16 h-16 rounded-full object-cover border">
+
+                                    <p class="mt-2 text-sm font-medium text-gray-800 text-center leading-tight">
+                                        {{ instructor.get_full_name|default:instructor.username }}
+                                    </p>
+
+                                    <span class="text-xs text-center text-gray-500">
+                                        {{ instructor.designation|default:"Instructor" }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+
+                <!-- Coordinators -->
+                <div class="flex flex-col items-center gap-4">
+
+                    <div class="flex justify-center">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center">
+                            {% for dept_coo in dept_coo|slice:":3" %}
+                            <div class="flex flex-col items-center bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition w-28">
+
+                                <img src="{% if dept_coo.profile_pic %}{{ dept_coo.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                                    class="w-16 h-16 rounded-full object-cover border">
+
+                                <p class="mt-2 text-sm font-medium text-gray-800 text-center leading-tight">
+                                    {{ dept_coo.get_full_name|default:dept_coo.username }}
+                                </p>
+
+                                <span class="text-xs text-center text-gray-500">
+                                    {{ dept_coo.designation }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>                
+
+                <!-- Staff -->
+                <div class="flex flex-col items-center gap-4">
+                    <!-- Top Level: Admins -->
+                    <div class="flex justify-center gap-6 mb-8">
+                        {% for admin in admin|slice:":3" %}
+                        <div class="flex flex-col items-center bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition w-36">
+
+                            <img src="{% if admin.profile_pic %}{{ admin.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                                class="w-32 h-32 rounded-full object-cover border">
+
+                            <p class="mt-2 text-sm font-medium text-gray-800 text-center leading-tight">
+                                {{ admin.get_full_name|default:admin.username }}
+                            </p>
+
+                            <span class="text-xs text-center text-gray-500">
+                                Master Admin
+                            </span>
+
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="flex justify-center">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 justify-items-center">
+                            {% for staff in staff_list|slice:":3" %}
+                            <div class="flex flex-col items-center bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition w-28">
+
+                                <img src="{% if staff.profile_pic %}{{ staff.profile_pic.url }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                                    class="w-16 h-16 rounded-full object-cover border">
+
+                                <p class="mt-2 text-sm font-medium text-gray-800 text-center leading-tight">
+                                    {{ staff.get_full_name|default:staff.username }}
+                                </p>
+
+                                <span class="text-xs text-center text-gray-500">
+                                    Admin | Staff
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+{% endblock %}

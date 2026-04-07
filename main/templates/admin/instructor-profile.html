@@ -1,0 +1,2114 @@
+{% extends 'builder.html' %}
+{% load static %}
+{% block page %}instructor{% endblock %}
+{% block content %}
+<style>
+@keyframes scanMove {
+  0% { top: 10%; opacity: 0; }
+  50% { opacity: 1; }
+  100% { top: 80%; opacity: 0; }
+}
+
+.scan-active #scanLine {
+  animation: scanMove 1.5s infinite;
+  opacity: 1;
+}
+
+.scan-active #glow {
+  opacity: 1;
+}  
+
+.tab-btn {
+    @apply px-4 py-2 text-sm font-medium whitespace-nowrap
+           text-gray-600 hover:text-gray-900
+           rounded-full transition;
+}
+
+.tab-btn.active {
+    @apply text-blue-600 bg-blue-50;
+}
+
+/* Hide scrollbar (mobile clean look) */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+
+            <!-- Header with overlay -->
+            <div class="relative h-44">
+                <img src="{% static 'image/header.jpg' %}" 
+                    class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                <!-- Profile Image -->
+                <img src="{% if instructor.profile_pic %}{{ instructor.profile_pic.url  }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                    class="absolute -bottom-12 left-6 h-48 w-48 rounded-full border-8 border-white shadow-lg object-cover">
+            </div>
+
+            <!-- Info Grid -->
+            <div class="grid md:grid-cols-2 gap-6 pt-12 px-6 pb-6">
+
+                <!-- Personal Info -->
+                <div>
+                    <!-- Name + Badge -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                {{ instructor.first_name }} {{ instructor.last_name }} | 
+                                <a id="openEditProfileBtn" class="text-sm text-blue-600 hover:underline transition cursor-pointer">
+                                    <iconify-icon icon="heroicons:pencil-square"></iconify-icon>
+                                </a> 
+                            </h2>
+                            <p class="text-sm text-gray-500">
+                                @ <a href="{{ instructor.email }}" class="text-blue-500 hover:underline transition">{{ instructor.email }}</a>
+                            </p>
+                        </div>
+
+                        {% if instructor.is_active %}
+                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                            Active
+                        </span>
+                        {% else %}
+                        <span class="bg-red-900 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                            Inactive
+                        </span>
+                        {% endif %}                       
+                    </div>
+
+                    <!-- Personal Details -->
+                    <div class="grid grid-cols-1 gap-3 mt-6 text-sm">
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">ID</span>
+                            <span class="font-semibold" id="ins_id">{{ instructor.instructor_id }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Birthday</span>
+                            <span class="font-semibold">{{ instructor.birthday|date:"F j, Y" }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Age</span>
+                            <span class="font-semibold">{{ instructor.age }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Gender</span>
+                            <span class="font-semibold">{{ instructor.gender }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Phone</span>
+                            <span class="font-semibold">{{ instructor.contact_info|default:"-" }}</span>
+                        </div>                        
+
+                    </div>                  
+                </div>
+
+                <!-- Academic Info -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Academic Information</h3>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Bachelor's Degree</span>
+                        <span class="font-semibold">{{ instructor.bs_degree }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Masters Degree</span>
+                        <span class="font-semibold">{{ instructor.masters_degree }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Doctorate Degree</span>
+                        <span class="font-semibold">{{ instructor.doctorate_degree }}</span>
+                    </div>
+                </div>  
+                <!-- Organization Info -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Organization Details</h3>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Academic Rank</span>
+                        <span class="font-semibold">{{ instructor.academic_rank }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Designation</span>
+                        <span class="font-semibold">{{ instructor.designation }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Date of Employment</span>
+                        <span class="font-semibold">{{ instructor.date_of_employment }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                        <span class="text-gray-500">Employment Status</span>
+                        <span class="font-semibold">{{ instructor.employment_status }}</span>
+                    </div>
+                </div>
+
+                <!-- Biometric Section -->
+                <div>
+
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Fingerprint Details</h3>
+
+                    <!-- Fingerprint Status -->
+                    <div class="flex gap-10 mt-4 md:mt-0 items-center">
+
+                        {% comment %} Main Fingerprint {% endcomment %}
+                        <div onclick="openBiometricModal()" id="instructor-{{ instructor.id }}-fp" class="flex flex-col items-center hover:scale-105 transition cursor-pointer">
+                            <p class="text-sm text-gray-500 mb-2">Main</p>
+                            <div class="relative w-24 h-48 border-2 rounded-2xl overflow-hidden 
+                                        {% if fp and fp.main_id %}border-green-500{% else %}border-gray-300{% endif %}">
+                                {% if fp and fp.main_id %}
+                                <img src="{% static 'image/fgreen.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% else %}
+                                <img src="{% static 'image/fblack.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% endif %}
+                            </div>
+                            <span class="mt-2 text-sm font-medium 
+                                        {% if fp and fp.main_id %}text-green-600{% else %}text-gray-500{% endif %}">
+                                {% if fp and fp.main_id %}Registered{% else %}Not Registered{% endif %}
+                            </span>
+                        </div>
+
+                        {% comment %} Backup Fingerprint {% endcomment %}
+                        <div onclick="openBiometricModal()" id="instructor-{{ instructor.id }}-fp" class="flex flex-col items-center hover:scale-105 transition cursor-pointer">
+                            <p class="text-sm text-gray-500 mb-2">Backup</p>
+                            <div class="relative w-24 h-48 border-2 rounded-2xl overflow-hidden 
+                                        {% if fp and fp.backup_id %}border-green-500{% else %}border-gray-300{% endif %}">
+                                {% if fp and fp.backup_id %}
+                                <img src="{% static 'image/fgreen.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% else %}
+                                <img src="{% static 'image/fblack.png' if fp and fp.main_id else 'image/fblack.png' %}" 
+                                    alt="Fingerprint"
+                                    class="w-24 h-48 object-contain">
+                                {% endif %}
+                            </div>
+                            <span class="mt-2 text-sm font-medium 
+                                        {% if fp and fp.backup_id %}text-green-600{% else %}text-gray-500{% endif %}">
+                                {% if fp and fp.backup_id %}Registered{% else %}Not Registered{% endif %}
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Table -->
+
+        
+        <div class="mt-8 bg-white rounded-2xl shadow-lg p-5 border border-gray-100">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-800">Weekly Schedule</h2>
+                    <p class="text-sm text-gray-500">Manage and view class schedules</p>
+                </div>
+
+                <button id="openModalBtn"
+                    class="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg 
+                        font-medium shadow-sm hover:bg-green-500 active:scale-95 transition">
+                    <span class="text-lg">+</span>
+                    Add Schedule
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-700">
+
+                    <!-- Table Head -->
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wide">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Time</th>
+                            <th class="px-4 py-3 text-center font-semibold">Mon</th>
+                            <th class="px-4 py-3 text-center font-semibold">Tue</th>
+                            <th class="px-4 py-3 text-center font-semibold">Wed</th>
+                            <th class="px-4 py-3 text-center font-semibold">Thu</th>
+                            <th class="px-4 py-3 text-center font-semibold">Fri</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sat</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sun</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table Body -->
+                    <tbody id="weeklyGridBody" class="divide-y divide-gray-100">
+
+                        <tr class="hover:bg-gray-50 transition">
+                            <td colspan="8" class="text-center py-6 text-gray-400 italic">
+                                Loading schedule...
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6">
+        <!-- Controls -->
+        <form method="get" class="flex flex-wrap items-center justify-center gap-4 mb-6 print:hidden p-4 bg-white rounded-xl shadow-md">
+
+            <!-- Month selector -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                <label class="text-gray-700 font-medium">Month:</label>
+                <select name="month" onchange="this.form.submit()" class="rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    {% if months %}
+                        {% for month in months %}
+                        <option value="{{ month }}" {% if month == current_month %}selected{% endif %}>{{ month }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option disabled selected>No records available</option>
+                    {% endif %}             
+                </select>
+            </div>
+
+            <!-- Year selector -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                <label class="text-gray-700 font-medium">Year:</label>
+                <select name="year" onchange="this.form.submit()" class="rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    {% if years %}
+                        {% for year in years %}
+                        <option value="{{ year }}" {% if year|stringformat:"s" == current_year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option disabled selected>No records available</option>
+                    {% endif %}                
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-500 transition shadow-sm">Show Records</button>
+                <button type="reset" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-500 transition shadow-sm">Clear</button>
+                <button type="button" onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition shadow-sm">Print</button>
+            </div>
+
+        </form>
+
+        <!-- Paper -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 print:p-0 print:shadow-none">
+            <div class="text-center font-bold text-lg mb-2">DAILY TIME RECORD</div>
+
+            <!-- Header Table -->
+            <table class="w-full text-sm mb-4">
+                <tbody>
+                <tr>
+                    <td class="text-left text-xs">For the month of</td>
+                    <td class="text-center font-semibold">{{ current_month }}</td>
+                    <td class="text-center font-semibold">1–15</td>
+                    <td class="text-center font-semibold">{{ current_year }}</td>
+                </tr>
+                <tr>
+                    <td class="text-left text-xs">Official hours of arrival<br>and departure</td>
+                    <td colspan="3" class="text-left text-xs">
+                    Regular Days ____________________<br>
+                    Saturdays ______________________
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <!-- Time Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto border border-gray-300 text-sm text-gray-700">
+                <thead class="bg-green-100 text-gray-800">
+                    <tr>
+                    <th rowspan="2" class="border border-gray-300 px-2 py-1">Days</th>
+                    <th colspan="2" class="border border-gray-300 px-2 py-1">A.M.</th>
+                    <th colspan="2" class="border border-gray-300 px-2 py-1">P.M.</th>
+                    <th colspan="2" class="border border-gray-300 px-2 py-1">UNDERTIME</th>
+                    </tr>
+                    <tr class="bg-green-50">
+                    <th class="border border-gray-300 px-2 py-1">Arr</th>
+                    <th class="border border-gray-300 px-2 py-1">Dep</th>
+                    <th class="border border-gray-300 px-2 py-1">Arr</th>
+                    <th class="border border-gray-300 px-2 py-1">Dep</th>
+                    <th class="border border-gray-300 px-2 py-1">Hrs</th>
+                    <th class="border border-gray-300 px-2 py-1">Min</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in At %}
+                    <tr class="even:bg-gray-50">
+                    <td class="border border-gray-300 px-2 py-1 text-center">{{ record.date|date:"d" }}</td>
+                    <td class="border border-gray-300 px-2 py-1 text-center">{{ record.time_in|date:"H:i" }}</td>
+                    <td class="border border-gray-300 px-2 py-1"></td>
+                    <td class="border border-gray-300 px-2 py-1 text-center">{% if record.time_out %}{{ record.time_out|date:"H:i" }}{% endif %}</td>
+                    <td class="border border-gray-300 px-2 py-1"></td>
+                    <td class="border border-gray-300 px-2 py-1 text-center">{{ record.undertime_hours }}</td>
+                    <td class="border border-gray-300 px-2 py-1 text-center">{{ record.undertime_minutes }}</td>
+                    </tr>
+                    {% endfor %}
+
+                    <!-- Extra Blank Rows -->
+                    {% for i in "12345678" %}
+                    <tr class="even:bg-gray-50">
+                    <td class="border border-gray-300 px-2 py-1">&nbsp;</td>
+                    <td class="border border-gray-300 px-2 py-1">&nbsp;</td>
+                    <td class="border border-gray-300 px-2 py-1">&nbsp;</td>
+                    <td class="border border-gray-300 px-2 py-1">&nbsp;</td>
+                    <td class="border border-gray-300 px-2 py-1">&nbsp;</td>
+                    <td class="border border-gray-300 px-2 py-1">&nbsp;</td>
+                    <td class="border border-gray-300 px-2 py-1">&nbsp;</td>
+                    </tr>
+                    {% endfor %}
+
+                    <tr class="bg-green-100 font-semibold">
+                    <td colspan="5" class="border border-gray-300 px-2 py-1 text-center">TOTAL</td>
+                    <td class="border border-gray-300 px-2 py-1 text-center">{{ total_undertime_hours }}</td>
+                    <td class="border border-gray-300 px-2 py-1 text-center">{{ total_undertime_minutes }}</td>
+                    </tr>
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- Modal Overlay -->
+<div id="scheduleModal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <!-- BACKDROP -->
+    <div class="absolute inset-0 bg-black/50"></div>
+    <!-- Modal Box -->
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-lg p-6 relative">
+
+        <!-- Close Button -->
+        <button id="closeModalBtn"
+                class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl">
+            &times;
+        </button>
+
+        <h2 class="text-xl font-bold mb-4">Add Schedule</h2>
+
+        <!-- FORM -->
+        <form id="scheduleForm" class="space-y-3 pt-5 text-gray-700">
+            {% csrf_token %}
+            <input type="text" id="instructor_id" name="instructor_id" value="{{ instructor.id }}" hidden>
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Subject</span>
+                <select name="subject_req" id="subject_req" class="w-80 rounded font-medium text-gray-500 text-right">
+                </select>
+            </div>
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Room</span>
+                <select name="classroom_req" id="classroom_req" class="w-80 rounded font-medium text-gray-500 text-right">
+                </select>
+            </div> 
+            <div class="px-4 py-3 bg-gray-50 border rounded-lg">
+                <span class="block font-medium text-gray-500 mb-2">Days</span>
+                <div class="flex gap-2 mb-2">
+                    <button type="button" onclick="toggleDays('weekday')" 
+                        class="px-2 py-1 bg-gray-200 rounded text-sm">Weekdays</button>
+                    <button type="button" onclick="toggleDays('weekend')" 
+                        class="px-2 py-1 bg-gray-200 rounded text-sm">Weekends</button>
+                </div>
+                <!-- Weekdays -->
+                <div class="mb-2">
+                    <span class="text-xs text-gray-400">Weekdays</span>
+                    <div class="flex flex-wrap gap-3 mt-1">
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Monday" class="text-green-500">
+                            <span>Mon</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Tuesday">
+                            <span>Tue</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Wednesday">
+                            <span>Wed</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Thursday">
+                            <span>Thu</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Friday">
+                            <span>Fri</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Weekends -->
+                <div>
+                    <span class="text-xs text-gray-400">Weekends</span>
+                    <div class="flex gap-3 mt-1">
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Saturday">
+                            <span>Sat</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Sunday">
+                            <span>Sun</span>
+                        </label>
+                    </div>
+                </div>
+            </div>                                             
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Start Time</span>
+                <input type="time" name="start_time"
+                    class="w-80 rounded font-medium text-gray-500 text-right">
+            </div> 
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">End Time</span>
+                <input type="time" name="end_time"
+                    class="w-80 rounded font-medium text-gray-500 text-right">
+            </div> 
+
+            <button type="submit"
+                    class="bg-green-500 text-white w-full py-2 rounded hover:bg-green-600">
+                Save Schedule
+            </button>
+        </form>
+
+        <!-- Errors -->
+        <div id="formErrors" class="text-red-500 mt-3"></div>
+    </div>
+</div>
+
+<!-- Biometrics -->
+<div id="biometricModal" 
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <!-- BACKDROP -->
+    <div class="absolute inset-0 bg-black/50"></div>
+    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-[fadeIn_.2s_ease-out]" id="biometricModalContent">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800">Biometric Registration</h2>
+                <p class="text-xs text-gray-500">Register or update fingerprint</p>
+            </div>
+            <button onclick="closeBiometricModal()"
+                class="w-9 h-9 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
+                ✕
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 flex flex-col items-center space-y-6">
+            <input type="hidden" id="main_id" name="main_id">           
+            <input type="hidden" id="backup_id" name="backup_id">  
+            <input type="hidden" id="extra_id" name="extra_id">          
+            <!-- Finger Selection -->
+
+            <!-- Scanner UI -->
+            <div class="relative w-40 h-40 flex items-center justify-center">
+
+                <!-- Glow -->
+                <div id="glow" class="absolute w-40 h-40 rounded-full bg-green-100 opacity-0 transition"></div>
+
+                <!-- Ring -->
+                <div class="absolute w-36 h-36 rounded-full border-4 border-green-500 opacity-60"></div>
+
+                <!-- Fingerprint -->
+                <img src="{% static 'image/fingerprint-scan.png' %}" 
+                     class="w-40 h-40 object-contain relative z-10"/>
+
+                <!-- Scan line -->
+                <div id="scanLine"
+                    class="absolute w-28 h-1 bg-green-500 opacity-0"></div>
+            </div>
+
+            <!-- Status -->
+            <div class="text-center">
+                <p class="text-xs text-gray-400">Status</p>
+                <p id="statusText" class="text-green-600 font-medium">Ready to Scan</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="w-full gap-3 text-center">
+
+                <button id="scanBtn"
+                        class="w-full py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition">
+                    Scan Fingerprint
+                </button>
+
+            </div>
+
+            <!-- Secondary -->
+            <button onclick="closeBiometricModal()"
+                class="text-sm text-gray-500 hover:text-gray-700 transition">
+                Cancel
+            </button>
+
+        </div>
+        
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <!-- BACKDROP -->
+        <div class="absolute inset-1 bg-black/50"></div>
+    <div class="bg-white w-full h-full md:h-auto md:max-w-4xl rounded-none md:rounded-2xl shadow-xl flex flex-col max-h-[100vh] md:max-h-[90vh] z-50">
+        <!-- HEADER -->
+        <div class="flex justify-between items-center p-4 border-b">
+        <h2 class="text-lg font-bold">Edit Profile</h2>
+        <button id="closeEditModalBtn" class="text-2xl text-gray-500">&times;</button>
+        </div>
+
+        <!-- TABS -->
+        <div class="relative border-b">
+
+            <!-- Scrollable container -->
+            <div id="tabsContainer"
+                class="flex gap-2 px-4 py-2 overflow-x-auto">
+
+                <button data-tab="personal" class="tab-btn mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500">Personal Information</button>
+                <button data-tab="employment" class="tab-btn mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500">Employment Details</button>
+                <button data-tab="education" class="tab-btn mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500">Education Background</button>
+                <button data-tab="contact" class="tab-btn mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500">Contact Information</button>
+                <button data-tab="profile" class="tab-btn mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500">Profile Photo</button>
+                <button data-tab="settings" class="tab-btn mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500">Account Settings</button>
+
+                <!-- Animated underline -->
+                <span id="tabIndicator"
+                    class="absolute bottom-0 h-[3px] bg-blue-600 rounded-full transition-all duration-300"></span>
+            </div>
+        </div>
+
+        <!-- BODY -->
+        <div class="flex-1 overflow-y-auto p-4">
+            <form id="editProfileForm" class="space-y-4 text-gray-700">
+                {% csrf_token %}
+                <input type="hidden" name="id" value="{{ instructor.id }}">
+
+                <!-- PERSONAL -->
+                <div class="tab-content active" id="personal">
+                    <div>
+                        <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Personal Information</h2> -->
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">First Name</label>
+                                <input type="text" name="first_name" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                                    value="{{ instructor.first_name }}">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Middle Name</label>
+                                <input type="text" name="middle_name"
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                                    value="{{ instructor.middle_name }}">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Last Name</label>
+                                <input type="text" name="last_name" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                                    value="{{ instructor.last_name }}">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Birthday</label>
+                                <input type="date" name="birthday" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500"
+                                    value="{{ instructor.birthday|date:'Y-m-d' }}">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Gender</label>
+                                <select name="gender" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500">
+                                    <option disabled {% if not instructor.gender %}selected{% endif %}>Select Gender</option>
+                                    <option value="Male" {% if instructor.gender == 'Male' %}selected{% endif %}>Male</option>
+                                    <option value="Female" {% if instructor.gender == 'Female' %}selected{% endif %}>Female</option>
+                                    <option value="Other" {% if instructor.gender == 'Other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EMPLOYMENT -->
+                <div class="tab-content hidden" id="employment">
+                    <div>
+                        <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Employment Details</h2> -->
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Instructor ID</label>
+                                <input type="text" name="instructor_id"
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300"
+                                    value="{{ instructor.instructor_id }}">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Employment Status</label>
+                                <select name="employment_status" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300">
+                                    <option disabled {% if not instructor.employment_status %}selected{% endif %}>Select Status</option>
+                                    <option value="Permanent" {% if instructor.employment_status == 'Permanent' %}selected{% endif %}>Permanent</option>
+                                    <option value="Temporary" {% if instructor.employment_status == 'Temporary' %}selected{% endif %}>Temporary</option>
+                                    <option value="Contract of Service" {% if instructor.employment_status == 'Contract of Service' %}selected{% endif %}>Contract of Service</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Designation</label>
+                                <select name="designation" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300">
+                                    <option disabled {% if not instructor.designation %}selected{% endif %}>Select Designation</option>
+                                    <option value="Department Chair" {% if instructor.designation == 'Department Chair' %}selected{% endif %}>Department Chair</option>
+                                    <option value="Department Secretary" {% if instructor.designation == 'Department Secretary' %}selected{% endif %}>Department Secretary</option>
+                                    <option value="IT Program Coordinator" {% if instructor.designation == 'IT Program Coordinator' %}selected{% endif %}>IT Program Coordinator</option>
+                                    <option value="CS Program Coordinator" {% if instructor.designation == 'CS Program Coordinator' %}selected{% endif %}>CS Program Coordinator</option>
+                                    <option value="Department Extension Coordinator" {% if instructor.designation == 'Department Extension Coordinator' %}selected{% endif %}>Department Extension Coordinator</option>
+                                    <option value="Department Research Coordinator" {% if instructor.designation == 'Department Research Coordinator' %}selected{% endif %}>Department Research Coordinator</option>
+                                    <option value="Instructor" {% if instructor.designation == 'Instructor' %}selected{% endif %}>Instructor</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Academic Rank</label>
+                                <select name="academic_rank" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300">
+                                    <option disabled {% if not instructor.academic_rank %}selected{% endif %}>Select Rank</option>
+                                        <option disabled {% if not instructor.academic_rank %}selected{% endif %}>Academic Rank</option>
+                                        <option value="Instructor 1" {% if instructor.academic_rank == 'Instructor 1' %}selected{% endif %}>Instructor 1</option>
+                                        <option value="Instructor 2" {% if instructor.academic_rank == 'Instructor 2' %}selected{% endif %}>Instructor 2</option>
+                                        <option value="Instructor 3" {% if instructor.academic_rank == 'Instructor 3' %}selected{% endif %}>Instructor 3</option>
+                                        <option value="Assistant Professor 1" {% if instructor.academic_rank == 'Assistant Professor 1' %}selected{% endif %}>Assistant Professor 1</option>
+                                        <option value="Assistant Professor 2" {% if instructor.academic_rank == 'Assistant Professor 2' %}selected{% endif %}>Assistant Professor 2</option>
+                                        <option value="Assistant Professor 3" {% if instructor.academic_rank == 'Assistant Professor 3' %}selected{% endif %}>Assistant Professor 3</option>
+                                        <option value="Assistant Professor 4" {% if instructor.academic_rank == 'Assistant Professor 4' %}selected{% endif %}>Assistant Professor 4</option>
+                                        <option value="Professor 1" {% if instructor.academic_rank == 'Professor 1' %}selected{% endif %}>Professor 1</option>
+                                        <option value="Professor 2" {% if instructor.academic_rank == 'Professor 2' %}selected{% endif %}>Professor 2</option>
+                                        <option value="Professor 3" {% if instructor.academic_rank == 'Professor 3' %}selected{% endif %}>Professor 3</option>
+                                        <option value="Professor 4" {% if instructor.academic_rank == 'Professor 4' %}selected{% endif %}>Professor 4</option>
+                                        <option value="Professor 5" {% if instructor.academic_rank == 'Professor 5' %}selected{% endif %}>Professor 5</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Workloads</label>
+                                <input type="number" name="workloads" min="0" placeholder="Number of Workloads" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.workloads }}"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Employment Date</label>
+                                <input type="date" name="date_of_employment" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.date_of_employment|date:'Y-m-d' }}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EDUCATION -->
+                <div class="tab-content hidden" id="education">
+                    <div>
+                        <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Educational Background</h2> -->
+                        <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Bachelor's Degree</label>
+                                <input type="text" name="bs_degree" placeholder="BS Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.bs_degree }}"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Master's Degree</label>
+                                <input type="text" name="masters_degree" placeholder="Master’s Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.masters_degree }}"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Doctorate's Degree</label>
+                                <input type="text" name="doctorate_degree" placeholder="Doctorate Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.doctorate_degree }}"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Eligibility</label>
+                                <input type="text" name="eligibility_type" placeholder="Eligibility Type" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" value="{{ instructor.eligibility_type }}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTACT -->
+                <div class="tab-content hidden" id="contact">
+                    <div>
+                        <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Contact Information</h2> -->
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Email Address</label>
+                                <input type="email" name="email" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300"
+                                    value="{{ instructor.email }}">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600">Contact Number</label>
+                                <input type="tel" name="contact_info" required
+                                    class="mt-1 p-2 w-full rounded-lg border border-gray-300"
+                                    value="{{ instructor.contact_info }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROFILE -->
+                <div class="tab-content hidden" id="profile">
+                    <div>
+                        <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Profile Picture</h2> -->
+
+                        <!-- PREVIEW -->
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
+
+                            <!-- Image Preview -->
+                            <img id="imagePreview"
+                                src="{% if instructor.profile_pic %}{{ instructor.profile_pic.url  }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                                alt="Preview"
+                                class="w-32 h-44 sm:w-36 sm:h-52 object-cover rounded-lg border shadow">
+
+                            <!-- Upload -->
+                            <div class="flex flex-col gap-2">
+                            <label for="fileUpload"
+                                    class="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-lg text-center hover:bg-green-500 transition">
+                                Choose Image
+                            </label>
+
+                            <span id="fileName" class="text-sm text-gray-500">
+                                No file chosen
+                            </span>
+                            </div>
+                        </div>
+
+                        <input type="file"
+                                id="fileUpload"
+                                name="fileUpload"
+                                accept="image/*"
+                                class="hidden">
+                    </div>
+                </div>
+
+                <!-- SETTINGS -->
+                <div class="tab-content hidden" id="settings">
+                    <div>
+                        <!-- <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Account Settings</h2> -->
+                        <p><span class="font-semibold text-gray-700 mb-4 border-b pb-2">Note: </span>Disabling an account will render it unsearchable and cannot be logged in.</p>
+                        <!-- PREVIEW -->
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
+                            <button type="button" onclick="resetPassword()" class="mt-1 p-2 w-full rounded-lg border border-gray-300 hover:text-white hover:bg-blue-500">
+                            Reset Password
+                            </button> 
+                            {% if instructor.is_active %}  
+                            <button type="button" onclick="disableAccount()" class="mt-1 p-2 w-full rounded-lg border border-gray-300 hover:text-white hover:bg-red-500 ">
+                            Disable Account
+                            </button>   
+                            {% else %}   
+                            <button type="button" onclick="enableAccount()" class="mt-1 p-2 w-full rounded-lg border border-gray-300 hover:text-white hover:bg-green-500 ">
+                            Enable Account
+                            </button> 
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>        
+
+                <!-- SAVE -->
+                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg">
+                Save Changes
+                </button>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="previewschedule" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <!-- BACKDROP -->
+    <div class="absolute inset-0 bg-black/50"></div>
+    <!-- Modal Box -->
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-lg p-6 relative">
+
+        <!-- Close Button -->
+        <button onclick="closepreviewModal()"
+                class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl">
+            &times;
+        </button>
+
+        <h2 class="text-xl font-bold mb-4">Schedule Details</h2>
+
+        <!-- FORM -->
+        <form id="scheduleForm" class="space-y-3 pt-5 text-gray-700">
+            {% csrf_token %}
+            <input type="text" id="sched_id" name="sched_id" value="" hidden>
+            <input type="text" id="inst_id" name="inst_id" value="" hidden>
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Subject</span>
+                <select name="subject_req" id="subject_ereq" class="w-80 rounded font-medium text-gray-500 text-right">
+                </select>
+            </div>
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Room</span>
+                <select name="classroom_req" id="classroom_ereq" class="w-80 rounded font-medium text-gray-500 text-right">
+                </select>
+            </div> 
+            <div class="px-4 py-3 bg-gray-50 border rounded-lg">
+                <span class="block font-medium text-gray-500 mb-2">Days</span>
+                <div class="flex gap-2 mb-2">
+                    <button type="button" onclick="toggleDays('weekday')" 
+                        class="px-2 py-1 bg-gray-200 rounded text-sm">Weekdays</button>
+                    <button type="button" onclick="toggleDays('weekend')" 
+                        class="px-2 py-1 bg-gray-200 rounded text-sm">Weekends</button>
+                </div>
+                <!-- Weekdays -->
+                <div class="mb-2">
+                    <span class="text-xs text-gray-400">Weekdays</span>
+                    <div class="flex flex-wrap gap-3 mt-1">
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="edays" value="Monday" class="text-green-500">
+                            <span>Mon</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="edays" value="Tuesday">
+                            <span>Tue</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="edays" value="Wednesday">
+                            <span>Wed</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="edays" value="Thursday">
+                            <span>Thu</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="edays" value="Friday">
+                            <span>Fri</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Weekends -->
+                <div>
+                    <span class="text-xs text-gray-400">Weekends</span>
+                    <div class="flex gap-3 mt-1">
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="edays" value="Saturday">
+                            <span>Sat</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="edays" value="Sunday">
+                            <span>Sun</span>
+                        </label>
+                    </div>
+                </div>
+            </div>                                             
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Start Time</span>
+                <input type="time" id="start_etime" name="start_etime"
+                    class="w-80 rounded font-medium text-gray-500 text-right">
+            </div> 
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">End Time</span>
+                <input type="time" id="end_etime" name="end_etime"
+                    class="w-80 rounded font-medium text-gray-500 text-right">
+            </div> 
+            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button type="button" onclick="deleteSchedule()"
+                        class="bg-red-500 text-white w-full py-2 rounded hover:bg-red-600">
+                    Delete Schedule
+                </button>                
+                <button type="button" onclick="updateschedule()"
+                        class="bg-green-500 text-white w-full py-2 rounded hover:bg-green-600">
+                    Update Schedule
+                </button>
+            </div>
+
+        </form>
+
+        <!-- Errors -->
+        <div id="formErrors" class="text-red-500 mt-3"></div>
+    </div>
+</div>
+
+<script>
+    const dayMap = {
+        "M": "Monday",
+        "T": "Tuesday",
+        "W": "Wednesday",
+        "TH": "Thursday",
+        "F": "Friday",
+        "SAT": "Saturday",
+        "SUN": "Sunday"
+    };
+
+    async function deleteSchedule() {
+
+        const result = await Swal.fire({
+            title: "Are you sure?",
+            text: "This schedule will be permanently deleted.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#ef4444",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Yes, delete it",
+            cancelButtonText: "Cancel"
+        });
+
+        if (!result.isConfirmed) return;
+
+        const formData = new FormData();
+        formData.append("sched_id", sched_id.value);
+
+        // 🔥 Show loading
+        Swal.fire({
+            title: "Deleting...",
+            text: "Please wait",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const res = await fetch(`/schedule/delete/`, {
+                method: "POST",
+                body: formData, // ✅ you forgot this earlier
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Deleted!",
+                    text: "Schedule removed successfully.",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                loadWeeklyGrid(); // refresh UI
+                closepreviewModal();
+            } else {
+                Swal.fire("Error", data.message || "Delete failed", "error");
+            }
+
+        } catch (err) {
+            Swal.fire({
+                icon: "error",
+                title: "Request Failed",
+                text: "Something went wrong."
+            });
+        }
+    }    
+
+    function showdetails(id, instructor_id) {
+        document.getElementById("previewschedule").classList.remove("hidden");
+        const formData = new FormData();
+        formData.append("id", id);     
+        formData.append("instructor_id", instructor_id);     
+        fetch("/instructor/schedule/get/", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const rawDays = data.solo_sched.day.split(",");
+            const mappedDays = rawDays.map(d => dayMap[d]);
+            sched_id.value= data.solo_sched.id
+            subject_ereq.value = data.solo_sched.subject_id;
+            classroom_ereq.value = data.solo_sched.room_id;
+            // Apply checked state
+            document.querySelectorAll('input[name="edays"]').forEach(cb => {
+                cb.checked = mappedDays.includes(cb.value);
+            });
+            start_etime.value = data.solo_sched.start;
+            end_etime.value = data.solo_sched.end;
+            inst_id.value = instructor_id;
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: "error",
+                title: "Request Failed",
+                text: "Something went wrong. Please try again."
+            });
+        });        
+    }
+
+    async function updateschedule() {
+        const formData = new FormData(form);
+        const selectedOption = classroom_ereq.options[classroom_ereq.selectedIndex];
+        const roomType = selectedOption.dataset.type;
+        // Collect selected day values
+        const selectedDays = Array.from(document.querySelectorAll('input[name="edays"]:checked'))
+            .map(input => input.value);
+
+        if (selectedDays.length === 0) {
+            showError("Please select at least one day.");
+            return;
+        }
+        formData.append("sched_id", sched_id.value);
+        formData.append("subject_ereq", subject_ereq.value);
+        formData.append("classroom_ereq", classroom_ereq.value);
+        formData.append("room_type", roomType);
+        formData.append("instructor_id", inst_id.value);
+        // Append each day individually
+        selectedDays.forEach(day => formData.append("selectedDays", day));
+
+        formData.append("start_etime", start_etime.value);
+        formData.append("end_etime", end_etime.value);
+
+        try {
+            const res = await fetch(`/instructor/schedule/update/`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Updated!",
+                    text: "Schedule has been updated.",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                loadWeeklyGrid(); // refresh UI
+                closepreviewModal();
+            } else {
+                Swal.fire("Error", data.message || "Update failed", "error");
+            }
+
+        } catch (err) {
+            Swal.fire({
+                icon: "error",
+                title: "Request Failed",
+                text: "Something went wrong."
+            });
+        }
+    }
+
+    // CLOSE MODAL
+    function closepreviewModal() {
+        document.getElementById("previewschedule").classList.add("hidden");
+    }
+
+
+    function resetPassword() {
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will reset the instructor's password.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#2563eb",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Yes, reset it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+
+            if (!result.isConfirmed) return;
+
+            const formData = new FormData();
+            formData.append("user_id", `{{ instructor.id }}`);
+
+            // 🔥 Show loading modal
+            Swal.fire({
+                title: "Processing...",
+                text: "Resetting password, please wait.",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch("/instructor/password/reset/", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.status === "success") {
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Reset Successful",
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: data.message
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Request Failed",
+                    text: "Something went wrong. Please try again."
+                });
+            });
+        });
+    }
+
+    function disableAccount() {
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will render account unaccesible.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#2563eb",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Yes, disable it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+
+            if (!result.isConfirmed) return;
+
+            const formData = new FormData();
+            formData.append("user_id", `{{ instructor.id }}`);
+
+            // 🔥 Show loading modal
+            Swal.fire({
+                title: "Processing...",
+                text: "Disabling account, please wait.",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch("/instructor/account/disable/", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.status === "success") {
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Account has been disabled",
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: data.message
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Request Failed",
+                    text: "Something went wrong. Please try again."
+                });
+            });
+        });        
+    }    
+
+    function enableAccount() {
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Enabling this account will restore its login.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#2563eb",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Yes, enable it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+
+            if (!result.isConfirmed) return;
+
+            const formData = new FormData();
+            formData.append("user_id", `{{ instructor.id }}`);
+
+            // 🔥 Show loading modal
+            Swal.fire({
+                title: "Processing...",
+                text: "Enabling account, please wait.",
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch("/instructor/account/enable/", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                if (data.status === "success") {
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Account has been enabled",
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: data.message
+                    });
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Request Failed",
+                    text: "Something went wrong. Please try again."
+                });
+            });
+        });        
+    }      
+
+    const fileInput = document.getElementById("fileUpload");
+    const preview = document.getElementById("imagePreview");
+    const fileName = document.getElementById("fileName");
+
+    fileInput.addEventListener("change", function () {
+        const file = this.files[0];
+
+        if (file) {
+            // Show file name
+            fileName.textContent = file.name;
+
+            // Preview image
+            const reader = new FileReader();
+            reader.onload = function (e) {
+            preview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            fileName.textContent = "No file chosen";
+        }
+    });
+
+    const tabs = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach(btn => {
+    btn.addEventListener("click", () => {
+
+        // RESET ALL TABS
+        tabs.forEach(b => {
+        b.classList.remove("bg-green-600", "text-white", "shadow");
+        b.classList.add("bg-gray-100", "text-gray-700");
+        });
+
+        // HIDE CONTENTS
+        contents.forEach(c => c.classList.add("hidden"));
+
+        // ACTIVATE CLICKED TAB
+        btn.classList.remove("bg-gray-100", "text-gray-700");
+        btn.classList.add("bg-green-600", "text-white", "shadow");
+
+        document.getElementById(btn.dataset.tab).classList.remove("hidden");
+    });
+    });
+
+    // DEFAULT ACTIVE TAB
+    tabs[0].click();
+
+
+    document.getElementById("fileUpload").addEventListener("change", function () {
+        const fileName = this.files[0]?.name || "No file chosen";
+        document.getElementById("fileName").textContent = fileName;
+    });
+
+    // TAB SWITCHING
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(c => {
+            c.classList.remove("active");
+            c.classList.add("hidden");
+            });
+
+            btn.classList.add("active");
+
+            const tab = document.getElementById(btn.dataset.tab);
+            tab.classList.remove("hidden");
+            tab.classList.add("active");
+        });
+    });
+
+
+    const editModal = document.getElementById("editProfileModal");
+    const openEditBtn = document.getElementById("openEditProfileBtn"); // add a button somewhere to trigger modal
+    const closeEditBtn = document.getElementById("closeEditModalBtn");
+    const editForm = document.getElementById("editProfileForm");
+
+    const modal = document.getElementById("scheduleModal");
+    const openBtn = document.getElementById("openModalBtn");
+    const closeBtn = document.getElementById("closeModalBtn");
+    const biometricModal = document.getElementById("biometricModal");
+    const statusText = document.getElementById("statusText");   
+    const main_id = document.getElementById("main_id");
+    const backup_id = document.getElementById("backup_id");   
+    const extra_id = document.getElementById("extra_id");   
+    const ins_id = document.getElementById("ins_id"); 
+
+    // ================= STATE =================
+    let currentState = "idle";
+    let fetchLogsInterval = null; // Global interval variable
+    let lastLogMessage = "";
+    let scanSessionId = 0;
+    let scanTimeout = null;
+    let logUpdateTimeout = null;
+    let isFetchingLogs = false;
+
+
+    const scanBtn = document.getElementById("scanBtn");
+        
+    function openBiometricModal(slot, existingValue) {
+        const modal = document.getElementById("biometricModal");
+
+        modal.classList.remove("hidden");
+    }
+
+    // ================= SCAN =================
+    scanBtn.addEventListener("click", async () => {
+        // Reset previous fingerprint data
+        window.fingerprintData = "";
+        tempLogData = { main: null, backup: null, extra: null };
+        lastLogMessage = "";  
+
+        // If currently scanning, stop it
+        if (currentState === "scanning") {
+            scanSessionId++;
+            clearTimeout(scanTimeout);
+            scanLine.classList.remove("scanning");
+            glow.classList.remove("animate-pulse");
+
+            // Stop fetching logs
+            if (fetchLogsInterval) {
+                clearInterval(fetchLogsInterval);
+                fetchLogsInterval = null;
+            }
+
+            const data = await postToEndpoint("{% url 'start_verify' %}");
+            if (data.success) {
+                statusText.textContent = "Scan Stopped";
+                statusText.classList.remove("text-yellow-500", "text-red-600");
+                statusText.classList.add("text-gray-500");
+                scanBtn.innerHTML = "Start scan";
+                currentState = "idle";
+            } else {
+                statusText.textContent = "Failed to queue Verify";
+                statusText.classList.remove("text-gray-500", "text-yellow-500");
+                statusText.classList.add("text-red-600");
+            }
+            return;
+        }
+
+        // Start scanning
+        currentState = "scanning";
+        statusText.textContent = "Scanning...";
+        statusText.classList.remove("text-gray-500", "text-red-600");
+        statusText.classList.add("text-yellow-500");
+        scanLine.classList.add("scanning");
+        glow.classList.add("animate-pulse");
+        scanBtn.innerHTML = "Stop scan";
+
+        const data = await postToEndpoint("{% url 'start_enroll' %}");
+        if (data.success) {
+            statusText.textContent = "Waiting for fingerprint...";
+            // Start fetching logs every 300ms
+            if (fetchLogsInterval) clearInterval(fetchLogsInterval);
+            fetchLogsInterval = setInterval(fetchLogs, 300);
+        } else {
+            statusText.textContent = "Failed to queue ENROLL";
+            statusText.classList.remove("text-gray-500", "text-yellow-500");
+            statusText.classList.add("text-red-600");
+            currentState = "idle";
+        }
+    });
+
+    // Helper to POST to a Django endpoint safely
+    async function postToEndpoint(url) {
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "X-CSRFToken": getCSRFToken() }
+            });
+            return await res.json();
+        } catch (err) {
+            statusText.textContent = "Server Error ❌";
+            statusText.classList.remove("text-yellow-500", "text-gray-500");
+            statusText.classList.add("text-red-600");
+            Swal.fire({ icon: "error", title: "Error", text: err.toString() });
+            currentState = "idle";
+            return { success: false };
+        }
+    } 
+
+    function isValidFingerprint(data) {
+        return data && data.main && data.backup && data.extra;
+    }    
+
+    async function fetchLogs() {
+        if (isFetchingLogs) return;
+        isFetchingLogs = true;
+
+        try {
+            const response = await fetch("/api/fingerprint/get/logs/");
+            if (!response.ok) throw new Error("Failed to fetch logs");
+
+            const data = await response.json();
+
+            const latest = data.logs?.[0];
+            if (!latest || !latest.message) return;
+
+            const latestLog = latest.message;
+
+            // ✅ Skip if same log
+            if (latestLog === lastLogMessage) return;
+
+            lastLogMessage = latestLog;
+
+            // ✅ Update UI immediately (faster UX)
+            updateStatus(latestLog);
+
+            // ✅ Update backend (non-blocking, don't await)
+            fetch(`/api/fingerprint/get/logs/update/${latest.id}/`, {
+            method: "POST"
+            }).catch(() => {}); // silently ignore errors
+
+            // ================= JSON EXTRACTION =================
+            const parsed = extractJSON(latestLog);
+
+            if (parsed && isValidFingerprint(parsed)) {
+            handleFingerprintComplete(parsed);
+            return;
+            }
+
+            // ================= DELAY HANDLER =================
+            handleLogDelay(latestLog);
+
+            // ================= FACE-ID STYLE PROGRESS =================
+            // updateScanProgress(latestLog);
+
+        } catch (err) {
+            console.error("Failed to fetch logs:", err);
+        } finally {
+            isFetchingLogs = false;
+        }
+    } 
+
+    function handleLogDelay(message) {
+        if (logUpdateTimeout) clearTimeout(logUpdateTimeout);
+
+        const longDelayMessages = [
+            "Scan complete. Remove finger.",
+            "Fingerprints did not match. Restarting...",
+            "Please wait."
+        ];
+
+        const delay = longDelayMessages.includes(message) ? 5000 : 3000;
+
+        logUpdateTimeout = setTimeout(() => {
+            logUpdateTimeout = null;
+        }, delay);
+    }    
+
+    function extractJSON(log) {
+        try {
+            // Case 1: pure JSON
+            return JSON.parse(log);
+        } catch {
+            // Case 2: JSON inside text
+            const match = log.match(/\{.*\}/);
+            if (!match) return null;
+
+            try {
+            return JSON.parse(match[0]);
+            } catch {
+            return null;
+            }
+        }
+    }    
+    
+    function updateStatus(message) {
+        statusText.textContent = message;
+    }    
+
+    async function closeBiometricModal() {
+        biometricModal.classList.add("hidden");
+
+        scanSessionId++;
+        clearTimeout(scanTimeout);
+        scanLine.classList.remove("scanning");
+        glow.classList.remove("animate-pulse");
+
+        // Stop fetching logs
+        if (fetchLogsInterval) {
+            clearInterval(fetchLogsInterval);
+            fetchLogsInterval = null;
+        }
+
+        const data = await postToEndpoint("{% url 'start_verify' %}");
+        if (data.success) {
+            statusText.textContent = "Ready to Scan";
+            statusText.classList.remove("text-yellow-500", "text-red-600");
+            statusText.classList.add("text-gray-500");
+            scanBtn.innerHTML = "Start scan";
+            currentState = "idle";
+        } else {
+            statusText.textContent = "Failed to queue Verify";
+            statusText.classList.remove("text-gray-500", "text-yellow-500");
+            statusText.classList.add("text-red-600");
+        }
+    }
+
+    /* Click outside to close */
+    biometricModal.addEventListener("click", (e) => {
+        if (e.target === biometricModal) closeBiometricModal();
+    });
+
+
+    async function handleFingerprintComplete(parsed) {
+        try {
+            const formData = new FormData();
+            formData.append("instructor_id", ins_id.innerHTML);
+            formData.append("main_id", parsed.main);
+            formData.append("backup_id", parsed.backup);
+            formData.append("extra_id", parsed.extra);
+
+            const res = await fetch("/api/update-profile-fingerprint/", {
+            method: "POST",
+            body: formData,
+            headers: { "X-CSRFToken": getCSRFToken() }
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                // 2️⃣ Update fingerprint status
+                statusText.textContent = "Fingerprint Registered ✔";
+                statusText.className = "text-green-600 font-semibold";
+
+                // Stop animations
+                scanLine.classList.remove("scanning");
+                glow.classList.remove("animate-pulse");
+
+                // Stop polling
+                if (fetchLogsInterval) {
+                    clearInterval(fetchLogsInterval);
+                    fetchLogsInterval = null;
+                }
+
+                // Disable scan buttons
+                scanBtn.disabled = true;
+                scanBtn.innerHTML = "Completed";
+
+                currentState = "idle";
+
+                // Call verify safely (optional)
+                await postToEndpoint("{% url 'start_verify' %}");
+
+            } else {
+                Swal.fire({ icon: "error", title: "Error", text: data.message });
+            }
+
+        } catch (err) {
+            Swal.fire({ icon: "error", title: "Server Error", text: err.toString() });
+        }        
+    };    
+
+    function startScan(mode) {
+        const glow = document.getElementById("glow");
+        const scanLine = document.getElementById("scanLine");
+
+        statusText.textContent = mode === "register" 
+            ? "Scanning for registration..." 
+            : "Scanning for update...";
+
+        statusText.className = "text-yellow-600 font-medium";
+
+        glow.classList.add("animate-pulse");
+        scanLine.classList.remove("opacity-0");
+        scanLine.classList.add("animate-[scanMove_2s_linear_infinite]");
+
+        // 👉 Replace with real device call
+        setTimeout(() => {
+            statusText.textContent = "Fingerprint saved successfully";
+            statusText.className = "text-green-600 font-medium";
+
+            glow.classList.remove("animate-pulse");
+            scanLine.classList.add("opacity-0");
+        }, 3000);
+    }
+
+
+    // Open
+    openBtn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    });
+
+    // Close
+    async function closeModal() {
+        scanSessionId++;
+        clearTimeout(scanTimeout);
+        scanLine.classList.remove("scanning");
+        glow.classList.remove("animate-pulse");
+
+        // Stop fetching logs
+        if (fetchLogsInterval) {
+            clearInterval(fetchLogsInterval);
+            fetchLogsInterval = null;
+        }
+
+        const data = await postToEndpoint("{% url 'start_verify' %}");
+        if (data.success) {
+            statusText.textContent = "Ready to Scan";
+            statusText.classList.remove("text-yellow-500", "text-red-600");
+            statusText.classList.add("text-gray-500");
+            scanBtn.innerHTML = "Start scan";
+            currentState = "idle";
+        } else {
+            statusText.textContent = "Failed to queue Verify";
+            statusText.classList.remove("text-gray-500", "text-yellow-500");
+            statusText.classList.add("text-red-600");
+        }
+
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+    closeBtn.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });  
+
+    const form = document.getElementById("scheduleForm");
+    const errorBox = document.getElementById("formErrors");
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        errorBox.innerHTML = "";
+
+        // ✅ Validate selected days
+        const selectedDays = document.querySelectorAll('input[name="days"]:checked');
+        if (selectedDays.length === 0) {
+            showError("Please select at least one day.");
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        // ✅ Get selected room option
+        const select = document.getElementById("classroom_req"); // adjust ID if needed
+        const selectedOption = select.options[select.selectedIndex];
+
+        const roomId = selectedOption.value;
+        const roomType = selectedOption.dataset.type; // "classroom" or "comlab"
+
+        // ❗ Remove both first (important to avoid conflicts)
+        formData.delete("room");
+        formData.delete("comlab");
+
+        // ✅ Assign correct field
+        if (roomType === "classroom") {
+            formData.append("room", roomId);
+        } else if (roomType === "comlab") {
+            formData.append("comlab", roomId);
+        }
+
+        try {
+            const response = await fetch("{% url 'add_schedule' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showSuccess("Schedule created");
+                loadWeeklyGrid();
+
+                form.reset();
+                closeModal();
+            } else {
+                showError(data.error);
+            }
+
+        } catch (error) {
+            console.error(error);
+            showError("Something went wrong. Please try again.");
+        }
+    }); 
+    
+    function toggleDays(type) {
+        const groups = {
+            weekday: ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+            weekend: ["Saturday","Sunday"]
+        };
+
+        document.querySelectorAll('input[name="days"]').forEach(cb => {
+            if (groups[type].includes(cb.value)) {
+                cb.checked = !cb.checked;
+            }
+        });
+    }   
+
+    async function getSubjects() {
+        const select = document.getElementById("subject_req");
+        const select2 = document.getElementById("subject_ereq");
+
+        // 🔥 loading state
+        [select, select2].forEach(s => {
+            s.innerHTML = `<option>Loading...</option>`;
+            s.disabled = true;
+        });
+
+        try {
+            const res = await fetch("/api/subjects-req/");
+            if (!res.ok) throw new Error("Failed to fetch");
+
+            const data = await res.json();
+
+            // clear both
+            select.innerHTML = "";
+            select2.innerHTML = "";
+
+            if (!data.subjects || data.subjects.length === 0) {
+                [select, select2].forEach(s => {
+                    s.innerHTML = `<option value="">No subject available</option>`;
+                });
+                return;
+            }
+
+            // ✅ placeholder (clone!)
+            const createDefault = () => {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "Select Subject";
+                opt.disabled = true;
+                opt.selected = true;
+                return opt;
+            };
+
+            select.appendChild(createDefault());
+            select2.appendChild(createDefault());
+
+            // ✅ add options (separate instances)
+            data.subjects.forEach(subject => {
+                const opt1 = document.createElement("option");
+                opt1.value = subject.id;
+                opt1.textContent = subject.name;
+
+                const opt2 = document.createElement("option");
+                opt2.value = subject.id;
+                opt2.textContent = subject.name;
+
+                select.appendChild(opt1);
+                select2.appendChild(opt2);
+            });
+
+        } catch (err) {
+            console.error("Error loading subjects:", err);
+
+            [select, select2].forEach(s => {
+                s.innerHTML = `<option>Error loading subjects</option>`;
+            });
+
+        } finally {
+            select.disabled = false;
+            select2.disabled = false;
+        }
+    }
+
+    async function getClassroom() {
+        const select = document.getElementById("classroom_req");
+        const select2 = document.getElementById("classroom_ereq");
+
+        // 🔥 loading state
+        [select, select2].forEach(s => {
+            s.innerHTML = `<option>Loading...</option>`;
+            s.disabled = true;
+        });
+
+        try {
+            const res = await fetch("/api/classroom-req/");
+            if (!res.ok) throw new Error("Failed to fetch");
+
+            const data = await res.json();
+            // clear both
+            select.innerHTML = "";
+            select2.innerHTML = "";
+
+            if (!data.class || data.class.length === 0) {
+                [select, select2].forEach(s => {
+                    s.innerHTML = `<option value="">No classroom available</option>`;
+                });
+                return;
+            }
+
+            // ✅ placeholder (clone!)
+            const createDefault = () => {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "Select Classroom";
+                opt.disabled = true;
+                opt.selected = true;
+                return opt;
+            };
+
+            select.appendChild(createDefault());
+            select2.appendChild(createDefault());
+
+            // ✅ add options (separate instances)
+            data.class.forEach(classroom => {
+                const opt1 = document.createElement("option");
+                opt1.value = classroom.id;
+                opt1.textContent = classroom.name;
+                opt1.dataset.type = classroom.type;
+
+                const opt2 = document.createElement("option");
+                opt2.value = classroom.id;
+                opt2.textContent = classroom.name;
+                opt2.dataset.type = classroom.type;
+
+                select.appendChild(opt1);
+                select2.appendChild(opt2);
+            });
+
+        } catch (err) {
+            console.error("Error loading classroom:", err);
+
+            [select, select2].forEach(s => {
+                s.innerHTML = `<option>Error loading classroom</option>`;
+            });
+
+        } finally {
+            select.disabled = false;
+            select2.disabled = false;
+        }
+    }
+
+    function timeToMinutes(t) {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+    }   
+
+    const timeSlots = [];
+
+    for (let hour = 7; hour <= 22; hour++) {
+        const formatted = String(hour).padStart(2, '0') + ":00";
+        timeSlots.push(formatted);
+    }
+
+    const subjectColors = [
+        "bg-green-300",
+        "bg-blue-300",
+        "bg-yellow-300",
+        "bg-purple-300",
+        "bg-pink-300"
+    ];    
+
+    const subjectColorMap = {};
+    let colorIndex = 0;
+
+    function getSubjectColor(subject) {
+        if (!subjectColorMap[subject]) {
+            subjectColorMap[subject] = subjectColors[colorIndex % subjectColors.length];
+            colorIndex++;
+        }
+        return subjectColorMap[subject];
+    }
+
+    async function loadWeeklyGrid() {
+        const body = document.getElementById("weeklyGridBody");
+
+        const res = await fetch(`/api/schedules/?instructor_id=${instructor_id.value}`);
+        const data = await res.json();
+
+        const days = ["M","T","W","TH","F","SAT","SUN"];
+
+        // Track merged cells
+        const skipMap = {};
+
+        body.innerHTML = "";
+
+        timeSlots.forEach((time, rowIndex) => {
+            const row = document.createElement("tr");
+
+            let cells = `<td class="border px-2 py-2 font-medium">${time}</td>`;
+
+            days.forEach(day => {
+
+                const key = `${day}-${rowIndex}`;
+
+                // ⛔ Skip if part of merged cell
+                if (skipMap[key]) return;
+
+                const match = data.schedules.find(s => {
+                    const scheduleDays = s.day.split(",").map(d => d.trim());
+
+                    return scheduleDays.includes(day) &&
+                        timeToMinutes(s.start) <= timeToMinutes(time) &&
+                        timeToMinutes(s.end) > timeToMinutes(time);
+                });
+
+                if (match) {
+
+                    // 🔥 Calculate rowspan
+                    const startMin = timeToMinutes(match.start);
+                    const endMin = timeToMinutes(match.end);
+
+                    let span = 0;
+
+                    for (let i = rowIndex; i < timeSlots.length; i++) {
+                        const slotMin = timeToMinutes(timeSlots[i]);
+
+                        if (slotMin >= startMin && slotMin < endMin) {
+                            span++;
+                            skipMap[`${day}-${i}`] = true;
+                        }
+                    }
+
+                    // remove skip for first row (we render it)
+                    delete skipMap[`${day}-${rowIndex}`];
+
+                    const colorClass = getSubjectColor(match.subject);
+                    cells += `
+                        <td onclick="showdetails(${match.id}, ${match.instructor_id})" rowspan="${span}" class="border-l-4 border-green-600 px-2 py-2 ${colorClass} text-center cursor-pointer hover:scale-105 transition">
+                            <div class="font-semibold text-sm">${match.subject}</div>
+                            <div class="text-xs text-gray-600">[<i> ${match.room} </i>]</div>
+                            <div class="text-xs">${match.start} - ${match.end}</div>
+                        </td>
+                    `;
+
+                } else {
+                    cells += `<td class="border px-2 py-2"></td>`;
+                }
+
+            });
+
+            row.innerHTML = cells;
+            body.appendChild(row);
+        });
+    }
+
+    // Open modal
+    if(openEditBtn){
+        openEditBtn.addEventListener("click", () => {
+            editModal.classList.remove("hidden");
+        });
+    }
+
+    // Close modal
+    closeEditBtn.addEventListener("click", () => {
+        editModal.classList.add("hidden");
+    });
+
+    // Click outside to close
+    editModal.addEventListener("click", (e) => {
+        if (e.target === editModal) editModal.classList.add("hidden");
+    });
+
+    // AJAX submit
+    editForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(editForm);
+        const id = formData.get("id");
+
+        try {
+            const res = await fetch(`/api/instructor/${id}/update/`, {
+            method: "POST",
+            body: formData,
+            headers: { "X-CSRFToken": formData.get("csrfmiddlewaretoken") }
+            });
+
+            const data = await res.json();
+
+            if(data.success){
+            Swal.fire({
+                icon: "success",
+                title: "Updated!",
+                text: "Instructor profile has been updated.",
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            setTimeout(() => {
+                window.location.reload(); // auto-refresh page
+            }, 2000);
+
+            } else {
+                showError(data.message || "Failed to update profile.");
+            }
+
+        } catch (err) {
+            showError(err.toString());
+        }
+    });    
+
+    loadWeeklyGrid();
+    getClassroom();
+    getSubjects();
+</script>
+{% endblock %}

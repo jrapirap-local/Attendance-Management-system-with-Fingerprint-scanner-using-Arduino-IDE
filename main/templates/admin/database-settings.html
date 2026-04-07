@@ -1,0 +1,129 @@
+{% extends 'builder.html' %}
+{% block page %}database{% endblock %}
+{% block content %}
+
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Database Management</h1>
+            <p class="text-sm text-gray-500">Manage your system records efficiently</p>
+        </div>
+
+        <button onclick="openAddModal()"
+            class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-500 transition">
+            + Add New Record
+        </button>
+    </div>
+
+<div class="p-6">
+
+    <!-- Header -->
+
+
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div class="grid md:grid-cols-3 gap-4">
+
+            <!-- Search -->
+            <input type="text" id="searchInput" placeholder="Search..."
+                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none">
+
+            <!-- Filter -->
+            <select id="filterType"
+                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none">
+                <option value="">All Types</option>
+                <option value="classroom">Classroom</option>
+                <option value="comlab">Comlab</option>
+            </select>
+
+            <!-- Refresh -->
+            <button onclick="loadData()"
+                class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg">
+                Refresh
+            </button>
+
+        </div>
+    </div>
+
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl shadow border border-gray-100 overflow-x-auto">
+
+        <table class="min-w-full text-sm text-gray-700">
+
+            <!-- Head -->
+            <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                <tr>
+                    <th class="px-4 py-3 text-left">ID</th>
+                    <th class="px-4 py-3 text-left">Name</th>
+                    <th class="px-4 py-3 text-left">Type</th>
+                    <th class="px-4 py-3 text-center">Actions</th>
+                </tr>
+            </thead>
+
+            <!-- Body -->
+            <tbody id="dataTable" class="divide-y">
+
+                <!-- Example Row -->
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3">1</td>
+                    <td class="px-4 py-3 font-medium">Room 101</td>
+                    <td class="px-4 py-3">
+                        <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-md">
+                            Classroom
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center space-x-2">
+                        <button class="text-blue-600 hover:underline">Edit</button>
+                        <button class="text-red-600 hover:underline">Delete</button>
+                    </td>
+                </tr>
+
+                <!-- Loading State -->
+                <tr>
+                    <td colspan="4" class="text-center py-6 text-gray-400">
+                        Loading data...
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</main>
+<script>
+function loadData() {
+    fetch('/api/classroom-scheduling/')
+        .then(res => res.json())
+        .then(data => {
+            const table = document.getElementById('dataTable');
+            table.innerHTML = '';
+
+            data.rooms.forEach(item => {
+                table.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3">${item.id}</td>
+                        <td class="px-4 py-3 font-medium">${item.name}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 text-xs rounded-md 
+                                ${item.type === 'classroom' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">
+                                ${item.type}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-center space-x-2">
+                            <button onclick="editItem(${item.id})" class="text-blue-600">Edit</button>
+                            <button onclick="deleteItem(${item.id})" class="text-red-600">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+}
+
+loadData();
+</script>
+{% endblock %}

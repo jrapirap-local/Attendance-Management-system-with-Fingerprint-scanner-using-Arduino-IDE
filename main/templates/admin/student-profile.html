@@ -1,0 +1,588 @@
+{% extends 'builder.html' %}
+{% load static %}
+{% block page %}student{% endblock %}
+{% block content %}
+<main class="p-4 md:p-6 space-y-6">
+    <!-- Page Header -->
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-2 gap-8">
+
+            <!-- Instructor Profile Card -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+
+                <!-- Header with overlay -->
+                <div class="relative h-44">
+                    <img src="{% static 'image/header.jpg' %}" 
+                        class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                    <!-- Profile Image -->
+                    <img src="{% if student.profile_pic %}{{ student.profile_pic.url  }}{% else %}{% static 'image/maleSil.jpg' %}{% endif %}" 
+                        class="absolute -bottom-12 left-6 h-24 w-24 rounded-full border-4 border-white shadow-lg object-cover">
+                </div>
+
+                <!-- Info -->
+                <div class="pt-16 pb-6 px-6">
+
+                    <!-- Name + Badge -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">
+                                {{ student.first_name }} {{ student.last_name }}
+                            </h2>
+                            <p class="text-sm text-gray-500">
+                                {{ student.position }} • {{ student.organization }}
+                            </p>
+                        </div>
+
+                        {% if student.user.is_superuser %}
+                        <span class="bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full">
+                            SUPER ADMIN
+                        </span>
+                        {% else %}
+                        <span class="bg-green-100 text-green-700 text-xs font-semibold px-3 py-1 rounded-full">
+                            Active
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Details -->
+                    <div class="grid grid-cols-1 gap-3 mt-6 text-sm">
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">ID</span>
+                            <span class="font-semibold">{{ student.id }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Birthday</span>
+                            <span class="font-semibold">{{ student.birthday|date:"F j, Y" }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Age</span>
+                            <span class="font-semibold">{{ student.age }}</span>
+                        </div>
+
+                        <div class="flex justify-between px-4 py-2 bg-gray-50 rounded-lg">
+                            <span class="text-gray-500">Gender</span>
+                            <span class="font-semibold">{{ student.gender }}</span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Organization Card -->
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
+
+                <!-- Header Image -->
+                <div class="relative h-40">
+                    <img src="{% static 'image/header.jpg' %}" 
+                        class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/40"></div>
+
+                    <h2 class="absolute bottom-4 left-6 text-white text-lg font-semibold">
+                        Organization Details
+                    </h2>
+                </div>
+
+                <!-- Info -->
+                <div class="p-6 space-y-4 text-sm">
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-500">Position</span>
+                        <span class="font-semibold">{{ student.position }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-500">Email</span>
+                        <span class="font-semibold">{{ student.email|default:"-" }}</span>
+                    </div>
+
+                    <div class="flex justify-between px-4 py-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-500">Phone</span>
+                        <span class="font-semibold">{{ student.contact_info|default:"-" }}</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-800">Weekly Schedule</h2>
+                    <p class="text-sm text-gray-500">Manage and view class schedules</p>
+                </div>
+
+                <button id="openModalBtn"
+                    class="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg 
+                        font-medium shadow-sm hover:bg-green-500 active:scale-95 transition">
+                    <span class="text-lg">+</span>
+                    Add Schedule
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-gray-700">
+
+                    <!-- Table Head -->
+                    <thead class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wide">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-semibold">Time</th>
+                            <th class="px-4 py-3 text-center font-semibold">Mon</th>
+                            <th class="px-4 py-3 text-center font-semibold">Tue</th>
+                            <th class="px-4 py-3 text-center font-semibold">Wed</th>
+                            <th class="px-4 py-3 text-center font-semibold">Thu</th>
+                            <th class="px-4 py-3 text-center font-semibold">Fri</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sat</th>
+                            <th class="px-4 py-3 text-center font-semibold">Sun</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table Body -->
+                    <tbody id="weeklyGridBody" class="divide-y divide-gray-100">
+
+                        <tr class="hover:bg-gray-50 transition">
+                            <td colspan="8" class="text-center py-6 text-gray-400 italic">
+                                Loading schedule...
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</main>
+<!-- Modal Overlay -->
+<div id="scheduleModal"
+    class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+
+    <!-- Modal Box -->
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-lg p-6 relative">
+
+        <!-- Close Button -->
+        <button id="closeModalBtn"
+                class="absolute top-2 right-3 text-gray-500 hover:text-red-500 text-xl">
+            &times;
+        </button>
+
+        <h2 class="text-xl font-bold mb-4">Add Schedule</h2>
+
+        <!-- FORM -->
+        <form id="scheduleForm" class="space-y-3 pt-5 text-gray-700">
+            {% csrf_token %}
+            <input type="text" id="instructor_id" name="instructor_id" value="{{ instructor.id }}" hidden>
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Subject</span>
+                <select name="subject_req" id="subject_req" class="w-80 rounded font-medium text-gray-500 text-right">
+                </select>
+            </div>
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Room</span>
+                <select name="classroom_req" id="classroom_req" class="w-80 rounded font-medium text-gray-500 text-right">
+                </select>
+            </div> 
+            <div class="px-4 py-3 bg-gray-50 border rounded-lg">
+                <span class="block font-medium text-gray-500 mb-2">Days</span>
+                <div class="flex gap-2 mb-2">
+                    <button type="button" onclick="toggleDays('weekday')" 
+                        class="px-2 py-1 bg-gray-200 rounded text-sm">Weekdays</button>
+                    <button type="button" onclick="toggleDays('weekend')" 
+                        class="px-2 py-1 bg-gray-200 rounded text-sm">Weekends</button>
+                </div>
+                <!-- Weekdays -->
+                <div class="mb-2">
+                    <span class="text-xs text-gray-400">Weekdays</span>
+                    <div class="flex flex-wrap gap-3 mt-1">
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Monday" class="text-green-500">
+                            <span>Mon</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Tuesday">
+                            <span>Tue</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Wednesday">
+                            <span>Wed</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Thursday">
+                            <span>Thu</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Friday">
+                            <span>Fri</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Weekends -->
+                <div>
+                    <span class="text-xs text-gray-400">Weekends</span>
+                    <div class="flex gap-3 mt-1">
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Saturday">
+                            <span>Sat</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="checkbox" name="days" value="Sunday">
+                            <span>Sun</span>
+                        </label>
+                    </div>
+                </div>
+            </div>                                             
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">Start Time</span>
+                <input type="time" name="start_time"
+                    class="w-80 rounded font-medium text-gray-500 text-right">
+            </div> 
+            <div class="flex justify-between px-4 py-2 bg-gray-50 border rounded-lg">
+                <span class="font-medium text-gray-500">End Time</span>
+                <input type="time" name="end_time"
+                    class="w-80 rounded font-medium text-gray-500 text-right">
+            </div> 
+
+            <button type="submit"
+                    class="bg-green-500 text-white w-full py-2 rounded hover:bg-green-600">
+                Save Schedule
+            </button>
+        </form>
+
+        <!-- Errors -->
+        <div id="formErrors" class="text-red-500 mt-3"></div>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById("scheduleModal");
+    const openBtn = document.getElementById("openModalBtn");
+    const closeBtn = document.getElementById("closeModalBtn");
+
+    // Open
+    openBtn.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    });
+
+    // Close
+    function closeModal() {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+    closeBtn.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });  
+
+    const form = document.getElementById("scheduleForm");
+    const errorBox = document.getElementById("formErrors");
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        errorBox.innerHTML = "";
+
+        // ✅ Validate selected days
+        const selectedDays = document.querySelectorAll('input[name="days"]:checked');
+        if (selectedDays.length === 0) {
+            showError("Please select at least one day.");
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        // ✅ Get selected room option
+        const select = document.getElementById("classroom_req"); // adjust ID if needed
+        const selectedOption = select.options[select.selectedIndex];
+
+        const roomId = selectedOption.value;
+        const roomType = selectedOption.dataset.type; // "classroom" or "comlab"
+
+        // ❗ Remove both first (important to avoid conflicts)
+        formData.delete("room");
+        formData.delete("comlab");
+
+        // ✅ Assign correct field
+        if (roomType === "classroom") {
+            formData.append("room", roomId);
+        } else if (roomType === "comlab") {
+            formData.append("comlab", roomId);
+        }
+
+        try {
+            const response = await fetch("{% url 'add_schedule' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": getCSRFToken()
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showSuccess("Schedule created");
+                loadWeeklyGrid();
+
+                form.reset();
+                closeModal();
+            } else {
+                showError(data.error);
+            }
+
+        } catch (error) {
+            console.error(error);
+            showError("Something went wrong. Please try again.");
+        }
+    }); 
+
+    async function deleteSchedule(id, btn) {
+        if (!confirm("Delete this schedule?")) return;
+
+        const res = await fetch(`/schedule/delete/${id}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken()
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            btn.closest("tr").remove();
+        }
+    } 
+    
+    function toggleDays(type) {
+        const groups = {
+            weekday: ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+            weekend: ["Saturday","Sunday"]
+        };
+
+        document.querySelectorAll('input[name="days"]').forEach(cb => {
+            if (groups[type].includes(cb.value)) {
+                cb.checked = !cb.checked;
+            }
+        });
+    }   
+
+    async function getSubjects() {
+        const select = document.getElementById("subject_req");
+
+        // Show loading state
+        select.innerHTML = `<option>Loading...</option>`;
+        select.disabled = true;
+
+        try {
+            const res = await fetch("/api/subjects-req/");
+
+            if (!res.ok) throw new Error("Failed to fetch");
+
+            const data = await res.json();
+
+            select.innerHTML = "";
+
+            if (!data.subjects || data.subjects.length === 0) {
+                const option = document.createElement("option");
+                option.value = "";
+                option.textContent = "No subject available";
+                select.appendChild(option);
+                return;
+            }
+
+            // Default placeholder
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Select Subject";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            select.appendChild(defaultOption);
+
+            data.subjects.forEach(subject => {
+                const option = document.createElement("option");
+                option.value = subject.id;
+                option.textContent = subject.name;
+                select.appendChild(option);
+            });
+
+        } catch (err) {
+            console.error("Error loading subjects:", err);
+
+            select.innerHTML = `<option>Error loading subjects</option>`;
+        } finally {
+            select.disabled = false;
+        }
+    }
+
+    async function getClassroom() {
+        const select = document.getElementById("classroom_req");
+
+        // Show loading state
+        select.innerHTML = `<option>Loading...</option>`;
+        select.disabled = true;
+
+        try {
+            const res = await fetch("/api/classroom-req/");
+
+            if (!res.ok) throw new Error("Failed to fetch");
+
+            const data = await res.json();
+
+            select.innerHTML = "";
+
+            if (!data.class || data.class.length === 0) {
+                const option = document.createElement("option");
+                option.value = "";
+                option.textContent = "No classroom available";
+                select.appendChild(option);
+                return;
+            }
+
+            // Default placeholder
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Select Classroom";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            select.appendChild(defaultOption);
+
+            data.class.forEach(classrm => {
+                const option = document.createElement("option");
+                option.value = classrm.id;
+                option.dataset.type = classrm.type;
+                option.textContent = classrm.name;
+                select.appendChild(option);
+            });
+
+        } catch (err) {
+            console.error("Error loading classroom:", err);
+
+            select.innerHTML = `<option>Error loading classroom</option>`;
+        } finally {
+            select.disabled = false;
+        }
+    }
+
+    function timeToMinutes(t) {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+    }   
+
+    const timeSlots = [
+        "08:00","08:30","09:00","09:30",
+        "10:00","10:30","11:00","11:30",
+        "12:00","12:30","13:00","13:30",
+        "14:00","14:30","15:00","15:30",
+    ];
+
+    const subjectColors = [
+        "bg-green-300",
+        "bg-blue-300",
+        "bg-yellow-300",
+        "bg-purple-300",
+        "bg-pink-300"
+    ];    
+
+    const subjectColorMap = {};
+    let colorIndex = 0;
+
+    function getSubjectColor(subject) {
+        if (!subjectColorMap[subject]) {
+            subjectColorMap[subject] = subjectColors[colorIndex % subjectColors.length];
+            colorIndex++;
+        }
+        return subjectColorMap[subject];
+    }
+
+    async function loadWeeklyGrid() {
+        const body = document.getElementById("weeklyGridBody");
+
+        const res = await fetch(`/api/schedules/?instructor_id=${instructor_id.value}`);
+        const data = await res.json();
+
+        const days = ["M","T","W","TH","F","SAT","SUN"];
+
+        // Track merged cells
+        const skipMap = {};
+
+        body.innerHTML = "";
+
+        timeSlots.forEach((time, rowIndex) => {
+            const row = document.createElement("tr");
+
+            let cells = `<td class="border px-2 py-2 font-medium">${time}</td>`;
+
+            days.forEach(day => {
+
+                const key = `${day}-${rowIndex}`;
+
+                // ⛔ Skip if part of merged cell
+                if (skipMap[key]) return;
+
+                const match = data.schedules.find(s => {
+                    const scheduleDays = s.day.split(",").map(d => d.trim());
+
+                    return scheduleDays.includes(day) &&
+                        timeToMinutes(s.start) <= timeToMinutes(time) &&
+                        timeToMinutes(s.end) > timeToMinutes(time);
+                });
+
+                if (match) {
+
+                    // 🔥 Calculate rowspan
+                    const startMin = timeToMinutes(match.start);
+                    const endMin = timeToMinutes(match.end);
+
+                    let span = 0;
+
+                    for (let i = rowIndex; i < timeSlots.length; i++) {
+                        const slotMin = timeToMinutes(timeSlots[i]);
+
+                        if (slotMin >= startMin && slotMin < endMin) {
+                            span++;
+                            skipMap[`${day}-${i}`] = true;
+                        }
+                    }
+
+                    // remove skip for first row (we render it)
+                    delete skipMap[`${day}-${rowIndex}`];
+
+                    const colorClass = getSubjectColor(match.subject);
+
+                    cells += `
+                        <td rowspan="${span}" class="border-l-4 border-green-600 px-2 py-2 ${colorClass} text-center">
+                            <div class="font-semibold text-sm">${match.subject}</div>
+                            <div class="text-xs text-gray-600">[<i> ${match.room} </i>]</div>
+                            <div class="text-xs">${match.start} - ${match.end}</div>
+                        </td>
+                    `;
+
+                } else {
+                    cells += `<td class="border px-2 py-2"></td>`;
+                }
+
+            });
+
+            row.innerHTML = cells;
+            body.appendChild(row);
+        });
+    }
+
+    loadWeeklyGrid();
+    getClassroom();
+    getSubjects();
+</script>
+{% endblock %}

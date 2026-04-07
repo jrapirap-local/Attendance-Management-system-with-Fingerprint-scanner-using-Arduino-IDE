@@ -1,44 +1,77 @@
-  {% load static %}
-  <div class="sidebar" id="sidebar">
-    <div class="logo-container">
-        <img src="{% static 'image/logoams.png' %}" alt="Logo" class="logo">
-    </div>
-    
-    <hr>
-    <div class="menu">
-        <a href="{% url 'dashboard' %}"><span>Dashboard</span></a>
-        <a href="{% url 'news' %}"><span>News</span></a>
+{% load static %}
+{% block sidebar %}
+<div id="sidebar" class="w-64 h-screen sticky top-0 bg-green-900 text-green-100 flex flex-col">
+    <!-- Menu -->
+    <div class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+        <a href="{% url 'dashboard' %}" 
+           class="block px-4 py-2 rounded-lg hover:bg-green-800 transition">
+           Dashboard
+        </a>
+
+        <a href="{% url 'news' %}" 
+           class="block px-4 py-2 rounded-lg hover:bg-green-800 transition">
+           News
+        </a>
+
         <!-- Instructor Dropdown -->
-        <div class="dropdown">
-            <a class="dropdown-btn">Instructor ▾</a>
+        <div>
+            <button onclick="toggleDropdown('instructorMenu')" 
+                    class="w-full text-left px-4 py-2 rounded-lg hover:bg-green-800 transition flex justify-between items-center">
+                Instructor
+                <span>▾</span>
+            </button>
 
-            <div class="dropdown-content">
-                <a href="{% url 'instructornew' %}">Add Instructor</a>
-                <a href="{% url 'instructor' %}">Manage Instructor</a>
-                <a href="{% url 'attendance' %}">Instructor Attendance & Schedule</a>
-                <a href="#"><span>Daily Time Records</span></a>
+            <div id="instructorMenu" class="hidden pl-6 mt-1 space-y-1">
+                <a href="{% url 'instructornew' %}" class="block px-4 py-2 rounded hover:bg-green-800">Add Instructor</a>
+                <a href="{% url 'instructor' %}" class="block px-4 py-2 rounded hover:bg-green-800">Manage Instructor</a>
+                <a href="{% url 'instructor-attendance' %}" class="block px-4 py-2 rounded hover:bg-green-800">Instructor Attendance & Schedule</a>
+                <a href="{% url 'instructor-dtr' %}" class="block px-4 py-2 rounded hover:bg-green-800">Daily Time Records</a>
             </div>
-        </div>        
+        </div>
+
         <!-- Comlab Dropdown -->
-        <div class="dropdown">
-            <a class="dropdown-btn">Comlab ▾</a>
+        <div>
+            <button onclick="toggleDropdown('comlabMenu')" 
+                    class="w-full text-left px-4 py-2 rounded-lg hover:bg-green-800 transition flex justify-between items-center">
+                Comlab
+                <span>▾</span>
+            </button>
 
-            <div class="dropdown-content">
-                <a href="#">Add Comlab</a>
-                <a href="{% url 'instructor' %}">Manage Comlab</a>
+            <div id="comlabMenu" class="hidden pl-6 mt-1 space-y-1">
+                <a href="#" class="block px-4 py-2 rounded hover:bg-green-800">Add Comlab</a>
+                <a href="{% url 'instructor' %}" class="block px-4 py-2 rounded hover:bg-green-800">Manage Comlab</a>
             </div>
-        </div>  
-        <a href="#">Profile</a>
-        <div class="dropdown">
-            <a class="dropdown-btn">Settings ▾</a>
-            <div class="dropdown-content">
-                <a href="#">Profile & Security</a>
-                <a href="#">Database Management</a>
+        </div>
+
+        <a href="#" class="block px-4 py-2 rounded-lg hover:bg-green-800 transition">Profile</a>
+
+        <!-- Settings Dropdown -->
+        <div>
+            <button onclick="toggleDropdown('settingsMenu')" 
+                    class="w-full text-left px-4 py-2 rounded-lg hover:bg-green-800 transition flex justify-between items-center">
+                Settings
+                <span>▾</span>
+            </button>
+
+            <div id="settingsMenu" class="hidden pl-6 mt-1 space-y-1">
+                <a href="#" class="block px-4 py-2 rounded hover:bg-green-800">Profile & Security</a>
+                <a href="#" class="block px-4 py-2 rounded hover:bg-green-800">Database Management</a>
             </div>
-        </div>     
-    </div>
-    <div class="logout">
-      <a href="#"><span>Logout</span></a>
+        </div>
     </div>
 
-  </div>
+    <!-- Logout -->
+    <div class="p-4 border-t border-green-700 flex-shrink-0">
+        <a href="#" class="block text-center px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg transition">Logout</a>
+    </div>
+
+</div>
+
+<script>
+function toggleDropdown(id){
+    const menu = document.getElementById(id);
+    menu.classList.toggle("hidden");
+}
+</script>
+
+{% endblock %}

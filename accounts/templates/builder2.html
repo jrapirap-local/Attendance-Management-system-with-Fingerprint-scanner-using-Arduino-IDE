@@ -6,28 +6,9 @@
 <title>Attendance Monitoring System</title>
 {% load static %}
 <link rel="shortcut icon" type="icon" href="{% static 'image/logoams.png' %}">
-<link rel="stylesheet" href="{% static 'css/omss5.css' %}">
+<!-- <link rel="stylesheet" href="{% static 'css/omss5.css' %}"> -->
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<style>
-body {
-  margin: 0;
-  height: 100vh;
-  min-width: 100vw;
-
-  display: flex;
-  justify-content: center; /* horizontal center */
-  align-items: center;     /* vertical center */
-
-  background: linear-gradient(135deg, #001a00, #004d00, #007f00);
-  color: rgba(41, 40, 40, 1);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto,
-               Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}    
-</style>
 <body class="body-login">
     {% block content %}
     {% endblock %}
