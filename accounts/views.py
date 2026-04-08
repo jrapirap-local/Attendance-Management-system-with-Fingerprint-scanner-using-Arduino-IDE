@@ -82,7 +82,7 @@ def login_view(request):
         if user.is_active == False:
             logout(request)
             messages.success(request, "You have been logged out.")
-            return redirect('login')  # Replace 'login' with your login URL name
+            return redirect(request, "login2.html")  # Replace 'login' with your login URL name
         if request.user.is_superuser:
             return redirect("dashboard")
         else:
