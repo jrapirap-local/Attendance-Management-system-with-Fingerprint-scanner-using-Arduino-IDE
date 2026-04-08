@@ -125,6 +125,7 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'main.CustomUser' 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = 'dashboard'
 MEDIA_URL = '/media/'
