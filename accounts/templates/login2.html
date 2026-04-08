@@ -28,12 +28,12 @@
           <!-- NEW: Navigation Links -->
           <div class="flex flex-col gap-3 mt-6 items-center">
 
-            <a onclick="openBiometricModal()"
+            <a href="{% url 'org' %}" 
               class="w-64 px-6 py-2 bg-white text-green-900 font-medium rounded-lg shadow hover:bg-green-100 transition">
               Organizational Chart
             </a>
 
-            <a href="{% url 'news' %}" 
+            <a href="{% url 'news_local' %}" 
               class="w-64 px-6 py-2 bg-white text-green-900 font-medium rounded-lg shadow hover:bg-green-100 transition">
               News & Announcements
             </a>

@@ -78,11 +78,13 @@ def builder2(request):
     return render(request, "builder2.html")
 
 def login_view(request):
+    # If already logged in
     if request.user.is_authenticated:
-        if user.is_active == False:
+        if not request.user.is_active:
             logout(request)
-            messages.success(request, "You have been logged out.")
-            return render(request, "login2.html")  # Replace 'login' with your login URL name
+            messages.error(request, "Account is disabled.")
+            return render(request, "login2.html")
+
         if request.user.is_superuser:
             return redirect("dashboard")
         else:
@@ -97,18 +99,21 @@ def login_view(request):
             return render(request, "login2.html")
 
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
-            if user.is_active == False:
+            if not user.is_active:
                 messages.error(request, "Account is disabled, please see administrator")
-                return render(request, "login2.html", {"error": "Account is disabled, please see administrator"})            
+                return render(request, "login2.html")
+
             login(request, user)
+
             if user.is_superuser:
                 return redirect("dashboard")
             else:
                 return redirect("../instructor/dashboard/")
         else:
             messages.error(request, "Invalid credentials")
-            return render(request, "login2.html", {"error": "Invalid credentials"})
+            return render(request, "login2.html")
 
     return render(request, "login2.html")
 
@@ -231,6 +236,9 @@ def admin(request):
 @login_required
 def news(request):
     return render(request, "admin/news.html")
+
+def news_local(request):
+    return render(request, "news.html")
 
 @superadmin_required
 @login_required

@@ -21,6 +21,7 @@ urlpatterns = [
     path("api/admin-update/<int:pk>/", views.update_admin, name="admin-update"),
     path("api/admin-delete/<int:pk>/", views.delete_admin),
     path("news/", views.news, name="news"),
+    path("local-news/", views.news_local, name="news_local"),
     path("instructor/", views.instructor, name="instructor"),
     path("instructor-new/", views.instructornew, name="instructornew"),
     path("student-new/", views.studentnew, name="studentnew"),
