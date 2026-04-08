@@ -33,23 +33,38 @@
     
     {% csrf_token %}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <form method="post" class="bg-white p-8 rounded-2xl shadow-lg space-y-8">
 
-      <!-- Left Column: Form -->
-      <form method="post" class="bg-white p-8 rounded-2xl shadow-lg space-y-8">
+      <!-- ================= PERSONAL INFO ================= -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Personal Information</h2>
 
-        <!-- ================= PERSONAL INFO ================= -->
-        <div>
-          <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Personal Information</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input type="text" name="first_name" placeholder="First Name" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <input type="text" name="middle_name" placeholder="Middle Name" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <input type="text" name="last_name" placeholder="Last Name" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label>First Name</label>
+            <input type="text" name="first_name" placeholder="First Name" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <input type="date" id="birthday" name="birthday" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <select name="gender" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          <div>
+            <label>Middle Name</label>
+            <input type="text" name="middle_name" placeholder="Middle Name" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+
+          <div>
+            <label>Last Name</label>
+            <input type="text" name="last_name" placeholder="Last Name" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label>Birthday</label>
+            <input type="date" id="birthday" name="birthday" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+
+          <div>
+            <label>Gender</label>
+            <select name="gender" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm">
               <option disabled selected>Gender</option>
               <option>Male</option>
               <option>Female</option>
@@ -57,20 +72,31 @@
             </select>
           </div>
         </div>
+      </div>
 
-        <!-- ================= EMPLOYMENT ================= -->
-        <div>
-          <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Employment Details</h2>
+      <!-- ================= EMPLOYMENT ================= -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Employment Details</h2>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" name="instructor_id" min="0" placeholder="Instructor ID" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <select name="employment_status" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label>Instructor ID</label>
+            <input type="text" name="instructor_id" placeholder="Instructor ID" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+
+          <div>
+            <label>Employment Status</label>
+            <select name="employment_status" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm">
               <option disabled selected>Employment Status</option>
               <option>Permanent</option>
               <option>Temporary</option>
               <option>Contract of Service</option>
             </select>
-            <select name="designation" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          </div>
+
+          <div>
+            <label>Designation</label>
+            <select name="designation" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm">
               <option disabled selected>Designation</option>
               <option>Department Chair</option>
               <option>Department Secretary</option>
@@ -80,7 +106,11 @@
               <option>Department Research Coordinator</option>
               <option>Instructor</option>
             </select>
-            <select name="academic_rank" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+          </div>
+
+          <div>
+            <label>Academic Rank</label>
+            <select name="academic_rank" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm">
               <option disabled selected>Academic Rank</option>
               <option>Instructor 1</option>
               <option>Instructor 2</option>
@@ -96,75 +126,96 @@
               <option>Professor 5</option>
             </select>
           </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <input type="date" name="date_of_employment" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <input type="number" name="workloads" min="0" placeholder="Number of Workloads" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-          </div>
         </div>
 
-        <!-- ================= EDUCATION ================= -->
-        <div>
-          <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Educational Background</h2>
-
-          <div class="space-y-3">
-            <input type="text" name="bs_degree" placeholder="BS Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <input type="text" name="masters_degree" placeholder="Master’s Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <input type="text" name="doctorate_degree" placeholder="Doctorate Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <input type="text" name="eligibility_type" placeholder="Eligibility Type" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-          </div>
-        </div>
-
-        <!-- ================= CONTACT ================= -->
-        <div>
-          <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Contact Information</h2>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="email" name="email" placeholder="Email Address" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-            <input type="tel" name="contact_info" placeholder="+63 9XX XXX XXXX" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
-          </div>
-        </div>
-
-        <!-- ================= FILE UPLOAD ================= -->
-        <div>
-          <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Profile Picture</h2>
-
-          <div class="flex items-center gap-4">
-            <label for="fileUpload"
-              class="cursor-pointer bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-500 transition shadow-sm">
-              Choose File
-            </label>
-            <span id="fileName" class="text-gray-500 text-sm">No file chosen</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label>Date of Employment</label>
+            <input type="date" name="date_of_employment" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
           </div>
 
-          <input type="file" id="fileUpload" name="profile_picture" accept="image/*" class="hidden">
+          <div>
+            <label>Number of Workloads</label>
+            <input type="number" name="workloads" min="0" placeholder="Number of Workloads" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= EDUCATION ================= -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Educational Background</h2>
+
+        <div class="space-y-3">
+          <div>
+            <label>BS Degree</label>
+            <input type="text" name="bs_degree" placeholder="BS Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+
+          <div>
+            <label>Master’s Degree</label>
+            <input type="text" name="masters_degree" placeholder="Master’s Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+
+          <div>
+            <label>Doctorate Degree</label>
+            <input type="text" name="doctorate_degree" placeholder="Doctorate Degree" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+
+          <div>
+            <label>Eligibility Type</label>
+            <input type="text" name="eligibility_type" placeholder="Eligibility Type" class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= CONTACT ================= -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Contact Information</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="Email Address" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+
+          <div>
+            <label>Contact Number</label>
+            <input type="tel" name="contact_info" placeholder="+63 9XX XXX XXXX" required class="p-2 mt-1 block w-full rounded-lg border border-gray-300 shadow-sm"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= FILE UPLOAD ================= -->
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Profile Picture</h2>
+
+        <label>Upload Profile Picture</label>
+        <div class="flex items-center gap-4 mt-2">
+          <label for="fileUpload"
+            class="cursor-pointer bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-500 transition shadow-sm">
+            Choose File
+          </label>
+          <span id="fileName" class="text-gray-500 text-sm">No file chosen</span>
         </div>
 
-        <!-- ================= HIDDEN ================= -->
-        <input type="hidden" id="main_id" name="main_id">
-        <input type="hidden" id="back_id" name="back_id">
-        <input type="hidden" id="extra_id" name="extra_id">
+        <input type="file" id="fileUpload" name="profile_picture" accept="image/*" class="hidden">
+      </div>
 
-        <!-- ================= SUBMIT ================= -->
-        <div>
-          <button type="submit" id="saveBtn"
-            class="w-full bg-gray-400 text-white px-4 py-3 rounded-xl shadow font-medium flex items-center justify-center gap-2 transition cursor-not-allowed"
-            disabled>
+      <!-- ================= HIDDEN ================= -->
+      <input type="hidden" id="main_id" name="main_id">
+      <input type="hidden" id="back_id" name="back_id">
+      <input type="hidden" id="extra_id" name="extra_id">
 
-            <span id="saveText">Save Instructor</span>
+      <!-- ================= SUBMIT ================= -->
+      <div>
+        <button type="submit" id="saveBtn"
+          class="w-full bg-gray-400 text-white px-4 py-3 rounded-xl shadow font-medium flex items-center justify-center gap-2 transition cursor-not-allowed"
+          disabled>
+          <span id="saveText">Save Instructor</span>
+        </button>
+      </div>
 
-            <svg id="saveSpinner" class="hidden w-5 h-5 animate-spin"
-              xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10"
-                stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor"
-                d="M4 12a8 8 0 018-8v8H4z"></path>
-            </svg>
-
-          </button>
-        </div>
-
-      </form>
+    </form>
 
       <!-- Right Column: Biometrics UI -->
       <div class="flex items-center justify-center" id="biometrics">
