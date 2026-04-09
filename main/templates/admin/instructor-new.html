@@ -241,6 +241,19 @@
             <div id="scanLine"
                 class="absolute w-32 h-1 bg-green-500 opacity-0"></div>
           </div>
+          <!-- Progress -->
+          <div class="w-full mt-4">
+            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div id="progressBar"
+                  class="h-2 bg-green-500 transition-all duration-500"
+                  style="width:0%"></div>
+            </div>
+
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span id="progressLabel">Waiting...</span>
+              <span id="progressPercent">0%</span>
+            </div>
+          </div>          
 
           <!-- Status -->
           <div class="text-center">
@@ -273,6 +286,48 @@
 </main>
 
 <script>  
+
+function updateProgress(step) {
+  const percent = step * 33;
+  if (step==0){
+    progressBar.style.width = 100 + "%";
+    progressPercent.textContent = 100 + "%";
+  } else {
+      progressBar.style.width = percent + "%";
+    progressPercent.textContent = percent + "%";
+  }
+
+
+  const labels = {
+    0: "Skipped",
+    1: "First Scan",
+    2: "Second Scan",
+    3: "Final Scan"
+  };
+
+  progressLabel.textContent = labels[step] || "Processing...";
+} 
+
+function startScanAnimation() {
+  scanLine.classList.add("scanning");
+  glow.classList.add("animate-pulse");
+}
+
+function stopScanAnimation() {
+  scanLine.classList.remove("scanning");
+  glow.classList.remove("animate-pulse");
+}
+
+function mapLogToStep(message) {
+  if (message.includes("Place finger")) return { step: 1, text: "Place your finger" };
+  if (message.includes("Remove finger")) return { step: 1, text: "Remove your finger" };
+  if (message.includes("Place same finger again")) return { step: 2, text: "Place same finger again" };
+  if (message.includes("Remove finger")) return { step: 2, text: "Remove again" };
+  if (message.includes("Place finger again")) return { step: 3, text: "Final scan..." };
+
+  return null;
+}
+
 // ================= FILE UPLOAD =================
 const fileInput = document.getElementById("fileUpload");
 fileInput.addEventListener("change", function () {
@@ -324,7 +379,6 @@ const main_id = document.getElementById("main_id");
 const backup_id = document.getElementById("backup_id");
 const extra_id = document.getElementById("extra_id");
 const statusText = document.getElementById("statusText");
-const saveSpinner = document.getElementById("saveSpinner");
 const scanLine = document.getElementById("scanLine");
 const glow = document.getElementById("glow");
 const progressBar = document.getElementById("progressBar");
@@ -357,13 +411,11 @@ function setLoading(isLoading) {
     saveBtn.classList.add("opacity-70", "cursor-wait");
 
     saveText.textContent = "Saving...";
-    saveSpinner.classList.remove("hidden");
   } else {
     saveBtn.disabled = false;
     saveBtn.classList.remove("opacity-70", "cursor-wait");
 
     saveText.textContent = "Save Instructor";
-    saveSpinner.classList.add("hidden");
   }
 }
 
@@ -452,6 +504,7 @@ skipBtn.addEventListener("click", () => {
 
   statusText.textContent = "Biometrics Skipped";
   statusText.className = "text-green-600";
+  updateProgress(0);
   enableSave();
   scanBtn.disabled = true;
 
@@ -531,22 +584,28 @@ async function fetchLogs() {
 
     console.log(parsedLog);
 
-    if(parsedLog.type=="enroll"){
-      // ✅ Skip if same log
+    if(parsedLog.type=="enroll") {
+
       if (parsedLog.log_msg === lastLogMessage) return;
-
       lastLogMessage = parsedLog.log_msg;
-      
 
-      // ✅ Update UI immediately (faster UX)
-      updateStatus(parsedLog.log_msg);
+      const mapped = mapLogToStep(parsedLog.log_msg);
 
-      // ✅ Update backend (non-blocking, don't await)
-      fetch(`/api/fingerprint/get/logs/update/${latest.id}/`, {
-        method: "POST"
-      }).catch(() => {}); // silently ignore errors
+      if (parsedLog.log_msg.includes("did not match")) {
 
-      // ================= JSON EXTRACTION =================
+        statusText.textContent = "Fingerprint mismatch. Try again.";
+        statusText.className = "text-red-600";
+
+        progressBar.style.width = "0%";
+        progressPercent.textContent = "0%";
+        progressLabel.textContent = "Restarting...";
+      }      
+
+      if (mapped) {
+        statusText.textContent = mapped.text;
+        updateProgress(mapped.step);
+      }
+
       const parsed = extractJSON(parsedLog.log_msg);
 
       if (parsed && isValidFingerprint(parsed)) {
@@ -554,11 +613,9 @@ async function fetchLogs() {
         return;
       }
 
-      // ================= DELAY HANDLER =================
-      handleLogDelay(parsedLog.log_msg);
-
-      // ================= FACE-ID STYLE PROGRESS =================
-      // updateScanProgress(latestLog);
+      fetch(`/api/fingerprint/get/logs/update/${latest.id}/`, {
+        method: "POST"
+      }).catch(()=>{});
     }
 
   } catch (err) {
@@ -590,36 +647,35 @@ function isValidFingerprint(data) {
 }
 
 async function handleFingerprintComplete(parsed) {
-  // Optional hidden inputs
-if (main_id) main_id.value = parsed.main;
-if (backup_id) backup_id.value = parsed.backup;
-if (extra_id) extra_id.value = parsed.extra;
+  if (main_id) main_id.value = parsed.main;
+  if (backup_id) backup_id.value = parsed.backup;
+  if (extra_id) extra_id.value = parsed.extra;
 
-  // UI transition
-  // updateProgress(100, "Completed");
+  updateProgress(3);
+
   statusText.textContent = "Fingerprint Registered ✔";
   statusText.className = "text-green-600 font-semibold";
 
-  // Stop animations
-  scanLine.classList.remove("scanning");
-  glow.classList.remove("animate-pulse");
+  stopScanAnimation();
 
-  // Stop polling
+  progressBar.style.width = "100%";
+  progressPercent.textContent = "100%";
+  progressLabel.textContent = "Completed";
+
   if (fetchLogsInterval) {
     clearInterval(fetchLogsInterval);
     fetchLogsInterval = null;
   }
 
-  // Disable buttons
   scanBtn.disabled = true;
   skipBtn.disabled = true;
   scanBtn.innerHTML = "Completed";
 
-  enableSave();
+  fingerprintReady = true;
+  checkEnableSave();
 
   currentState = "idle";
 
-  // Optional verify
   await postToEndpoint("{% url 'start_verify' %}");
 }
 
@@ -644,6 +700,12 @@ function handleLogDelay(message) {
 }
 
 function resetUI() {
+  progressBar.style.width = "0%";
+  progressPercent.textContent = "0%";
+  progressLabel.textContent = "Waiting...";
+  fileValid = false;
+  fingerprintReady = false;
+
   // Reset buttons
   saveBtn.disabled = true;
   saveBtn.classList.remove("bg-green-600", "hover:bg-green-500");
