@@ -24,11 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ump-2a_&l(oj%8fdn6iapjtuz2qd7ff^jk%sd25bea6ek#b-#^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = False
-DEBUG = True
+DEBUG = False
+# DEBUG = True
 
-# ALLOWED_HOSTS = ['72.62.254.36']
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['72.62.254.36']
+# ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -83,8 +83,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'amsdb',
-        # 'USER': 'amsdbuser',
-        'USER': 'postgres',
+        'USER': 'amsdbuser',
+        # 'USER': 'postgres',
         'PASSWORD': 'P@$$w0rd!!',
         'HOST': 'localhost',
         'PORT': '5432',
