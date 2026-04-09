@@ -1,4 +1,4 @@
-#!/var/www/omss5/venv/bin/python3
+#!/var/www/myproject/Attendance-Management-system-with-Fingerprint-scanner-using-Arduino-IDE/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
