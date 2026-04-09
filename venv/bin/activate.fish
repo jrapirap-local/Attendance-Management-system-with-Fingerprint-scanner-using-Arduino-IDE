@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /var/www/omss5/venv
+set -gx VIRTUAL_ENV /var/www/myproject/Attendance-Management-system-with-Fingerprint-scanner-using-Arduino-IDE/venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH
